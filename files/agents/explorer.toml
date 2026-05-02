@@ -12,9 +12,3 @@ Do not edit files.
 
 [features]
 apps = false
-
-developer_instructions = """
-Use this agent for codebase exploration, search, reading files and mapping context.
-Keep output concise.
-Do not edit files.
-"""
