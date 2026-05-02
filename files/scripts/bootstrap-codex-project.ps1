@@ -1,6 +1,5 @@
 param(
-    [string]$ProjectPath = (Get-Location).Path,
-    [switch]$Overwrite
+    [string]$ProjectPath = (Get-Location).Path
 )
 
 $ErrorActionPreference = "Stop"
@@ -13,12 +12,18 @@ $BasePreset = Join-Path $PresetDir "base-project.toml"
 $ProjectCodexDir = Join-Path $ProjectPath ".codex"
 $ProjectConfig = Join-Path $ProjectCodexDir "config.toml"
 
-if (!(Test-Path $McpPresetDir)) {
-    throw "Diretório de presets MCP não encontrado: $McpPresetDir"
+function Set-Utf8NoBomContent {
+    param(
+        [Parameter(Mandatory=$true)][string]$Path,
+        [Parameter(Mandatory=$true)][string]$Value
+    )
+
+    $encoding = [System.Text.UTF8Encoding]::new($false)
+    [System.IO.File]::WriteAllText($Path, $Value, $encoding)
 }
 
-if ((Test-Path $ProjectConfig) -and -not $Overwrite) {
-    throw "Já existe config local: $ProjectConfig. Use -Overwrite para sobrescrever."
+if (!(Test-Path $McpPresetDir)) {
+    throw "Diretório de presets MCP não encontrado: $McpPresetDir"
 }
 
 $presets = Get-ChildItem $McpPresetDir -Filter "*.toml" | Sort-Object Name
@@ -39,6 +44,7 @@ Write-Host ""
 $inputRaw = Read-Host "Selecionar MCPs"
 
 $selected = @()
+$selectedNames = @()
 
 if (![string]::IsNullOrWhiteSpace($inputRaw)) {
     $indexes = $inputRaw -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
@@ -54,7 +60,12 @@ if (![string]::IsNullOrWhiteSpace($inputRaw)) {
             throw "Índice fora do intervalo: $n"
         }
 
-        $selected += $presets[$n - 1]
+        $preset = $presets[$n - 1]
+
+        if ($selectedNames -notcontains $preset.BaseName) {
+            $selected += $preset
+            $selectedNames += $preset.BaseName
+        }
     }
 }
 
@@ -62,7 +73,8 @@ New-Item -ItemType Directory -Force -Path $ProjectCodexDir | Out-Null
 
 if (Test-Path $ProjectConfig) {
     $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
-    Copy-Item -LiteralPath $ProjectConfig -Destination "$ProjectConfig.bak-$timestamp"
+    $backupPath = Join-Path $ProjectCodexDir "config.toml.bak-$timestamp"
+    Copy-Item -LiteralPath $ProjectConfig -Destination $backupPath
 }
 
 $parts = New-Object System.Collections.Generic.List[string]
@@ -84,7 +96,7 @@ foreach ($preset in $selected) {
 
 $final = ($parts -join "`r`n").Trim() + "`r`n"
 
-Set-Content -Path $ProjectConfig -Value $final -Encoding UTF8
+Set-Utf8NoBomContent -Path $ProjectConfig -Value $final
 
 Write-Host ""
 Write-Host "Config local criada:"
@@ -94,4 +106,19 @@ if ($selected.Count -gt 0) {
     Write-Host ""
     Write-Host "MCPs habilitados:"
     $selected | ForEach-Object { Write-Host "- $($_.BaseName)" }
+}
+
+$resolveScript = Join-Path $PSScriptRoot "resolve-codex-services.ps1"
+$startServicesScript = Join-Path $PSScriptRoot "start-codex-services.ps1"
+
+if ((Test-Path $resolveScript) -and (Test-Path $startServicesScript)) {
+    $resolvedServices = @(& $resolveScript -McpNames $selectedNames -CodexHome $CodexHome)
+
+    if ($resolvedServices.Count -gt 0) {
+        Write-Host ""
+        Write-Host "Serviços MCP resolvidos:"
+        $resolvedServices | ForEach-Object { Write-Host "- $_" }
+
+        & $startServicesScript -Services $resolvedServices -CodexHome $CodexHome
+    }
 }

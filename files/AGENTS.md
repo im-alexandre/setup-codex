@@ -34,7 +34,9 @@ When I ask to initialize/start/bootstrap a project, do this before project work:
 
 Keep the main thread clean.
 
-Use subagents for execution-heavy work. If the task can be parallelized, spawn multiple subagents up to the configured limit.
+Prefer subagents for execution-heavy or parallelizable work, especially when a task could keep the main thread blocked for too long.
+
+Small tasks can stay in the main thread when that is the most efficient path.
 
 Default subagent settings:
 - model: gpt-5.4-mini
@@ -48,8 +50,9 @@ Do not use a stronger model for subagents unless explicitly requested.
 - The main agent acts primarily as an orchestrator:
   - clarify scope only when strictly necessary;
   - create a short execution plan;
-  - delegate execution to subagents whenever the task requires reading, editing, testing, debugging, searching, or comparing files;
-  - wait for all required subagents;
+  - delegate execution to subagents whenever the task is heavy, parallelizable, or likely to block the main thread for too long;
+  - after delegating, continue with independent work in the main thread;
+  - wait only when the subagent result is needed to unblock the next step;
   - consolidate results;
   - return only the final useful answer.
 - Do not fill the main thread with raw logs, exploratory notes, long file dumps, stack traces, or intermediate tool output.

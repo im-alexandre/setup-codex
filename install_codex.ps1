@@ -17,6 +17,59 @@ function Convert-ToTomlPath {
     return ($Path -replace "\\", "/")
 }
 
+function Set-Utf8NoBomContent {
+    param(
+        [Parameter(Mandatory=$true)][string]$Path,
+        [Parameter(Mandatory=$true)][string]$Value
+    )
+
+    $encoding = [System.Text.UTF8Encoding]::new($false)
+    [System.IO.File]::WriteAllText($Path, $Value, $encoding)
+}
+
+function Test-HasNvidiaGpu {
+    $controllers = Get-CimInstance -ClassName Win32_VideoController -ErrorAction SilentlyContinue
+
+    foreach ($controller in $controllers) {
+        $values = @($controller.Name, $controller.Description, $controller.AdapterCompatibility, $controller.VideoProcessor)
+
+        foreach ($value in $values) {
+            if ($value -and $value -match 'NVIDIA') {
+                return $true
+            }
+        }
+    }
+
+    return $false
+}
+
+function Get-RelativePathCompat {
+    param(
+        [Parameter(Mandatory=$true)][string]$BasePath,
+        [Parameter(Mandatory=$true)][string]$Path
+    )
+
+    $baseFull = [System.IO.Path]::GetFullPath($BasePath).TrimEnd("\", "/") + [System.IO.Path]::DirectorySeparatorChar
+    $pathFull = [System.IO.Path]::GetFullPath($Path)
+
+    $baseUri = [System.Uri]::new($baseFull)
+    $pathUri = [System.Uri]::new($pathFull)
+    $relativeUri = $baseUri.MakeRelativeUri($pathUri).ToString()
+
+    return ([System.Uri]::UnescapeDataString($relativeUri) -replace "/", "\")
+}
+
+function Get-BackupPath {
+    param(
+        [Parameter(Mandatory=$true)][string]$Path,
+        [Parameter(Mandatory=$true)][string]$Stamp
+    )
+
+    $parent = Split-Path -Parent $Path
+    $leaf = Split-Path -Leaf $Path
+    return (Join-Path $parent "$leaf.bak-$Stamp")
+}
+
 function Should-SkipPath {
     param([Parameter(Mandatory=$true)][string]$RelativePath)
 
@@ -53,18 +106,24 @@ function Should-SkipPath {
         "(^|/)\.next(/|$)",
         "(^|/)\.pytest_cache(/|$)",
         "(^|/)\.mypy_cache(/|$)",
+        "(^|/)\.codex(/|$)",
         "(^|/)\.env(\..*)?$",
+        "(^|/)\.venv(/|$)",
+        "(^|/)venv(/|$)",
+        "(^|/)env(/|$)",
         "\.key$",
         "\.pem$",
         "secret",
         "token",
         "(^|/)data(/|$)",
-        "(^|/)cache(/|$)",
+        "(^|/)cache(s)?(/|$)",
         "(^|/)\.cache(/|$)",
         "(^|/)storage(/|$)",
         "(^|/)chroma(/|$)",
         "(^|/)chromadb(/|$)",
         "(^|/)db(/|$)",
+        "(^|/)backups(/|$)",
+        "(^|/)exports(/|$)",
         "\.sqlite3?$",
         "\.db$",
         "\.duckdb$",
@@ -101,11 +160,13 @@ $Stamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $Installed = [System.Collections.Generic.List[string]]::new()
 $Skipped = [System.Collections.Generic.List[string]]::new()
 $Backups = [System.Collections.Generic.List[string]]::new()
+$HasNvidiaGpu = Test-HasNvidiaGpu
 
 $files = Get-ChildItem -LiteralPath $SourceRoot -Recurse -Force -File
 
 foreach ($file in $files) {
-    $relative = [System.IO.Path]::GetRelativePath($SourceRoot, $file.FullName)
+    $relative = Get-RelativePathCompat -BasePath $SourceRoot -Path $file.FullName
+    $relativeNormalized = $relative -replace "\\", "/"
 
     if (Should-SkipPath $relative) {
         $Skipped.Add($relative) | Out-Null
@@ -128,15 +189,23 @@ foreach ($file in $files) {
     New-Item -ItemType Directory -Force -Path $targetDir | Out-Null
 
     if (Test-Path -LiteralPath $target) {
-        $backup = "$target.bak-$Stamp"
+        $backup = Get-BackupPath -Path $target -Stamp $Stamp
         Copy-Item -LiteralPath $target -Destination $backup -Force
         $Backups.Add($backup) | Out-Null
     }
 
-    if ($file.Name -like "*.template.toml") {
+    if ($relativeNormalized -in @("presets/mcp-services.json", "presets/skill-services.json")) {
+        $content = Get-Content -LiteralPath $file.FullName -Raw
+
+        if (-not $HasNvidiaGpu) {
+            $content = $content.Replace("ollama-gpu", "ollama-cpu")
+        }
+
+        Set-Utf8NoBomContent -Path $target -Value $content
+    } elseif ($file.Name -like "*.template.toml") {
         $content = Get-Content -LiteralPath $file.FullName -Raw
         $content = $content.Replace("{{CODEX_HOME}}", $CodexHomeForToml)
-        Set-Content -LiteralPath $target -Value $content -Encoding UTF8
+        Set-Utf8NoBomContent -Path $target -Value $content
     } else {
         Copy-Item -LiteralPath $file.FullName -Destination $target -Force
     }
@@ -150,6 +219,12 @@ if (Get-Command python -ErrorAction SilentlyContinue) {
     if (Test-Path -LiteralPath $configPath) {
         python -c "import pathlib, tomllib; tomllib.loads(pathlib.Path(r'$configPath').read_text(encoding='utf-8')); print('config.toml ok')"
     }
+}
+
+if ($HasNvidiaGpu) {
+    Write-Host "Modo: GPU"
+} else {
+    Write-Host "Modo: CPU"
 }
 
 Write-Host ""

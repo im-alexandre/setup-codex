@@ -13,22 +13,21 @@ prevent_idle_sleep = true
 memories = true
 codex_hooks = true
 
-[[hooks.UserPromptSubmit]]
-[[hooks.UserPromptSubmit.hooks]]
+[[hooks.StartSession.hooks]]
 type = "command"
-command = "python C:/Users/imale/.codex/hooks/force_subagent_defaults.py"
+command = "python {{CODEX_HOME}}/hooks/force_subagent_defaults.py"
 timeout = 10
 statusMessage = "Forcing subagent defaults"
 
-[[hooks.UserPromptSubmit.hooks]]
+[[hooks.StartSession.hooks]]
 type = "command"
-command = "python C:/Users/imale/.codex/hooks/prefer_subagents.py"
+command = "python {{CODEX_HOME}}/hooks/prefer_subagents.py"
 timeout = 10
 statusMessage = "Applying subagent orchestration policy"
 
-[[hooks.UserPromptSubmit.hooks]]
+[[hooks.StartSession.hooks]]
 type = "command"
-command = "python C:/Users/imale/.codex/hooks/bootstrap_hint.py"
+command = "python {{CODEX_HOME}}/hooks/bootstrap_hint.py"
 timeout = 10
 statusMessage = "Checking project bootstrap"
 
@@ -129,9 +128,9 @@ theme = "gruvbox-dark"
 [marketplaces.openai-bundled]
 last_updated = "2026-05-02T10:06:31Z"
 source_type = "local"
-source = '\\?\C:\Users\imale\.codex\.tmp\bundled-marketplaces\openai-bundled'
+source = '\\?\{{CODEX_HOME}}\.tmp\bundled-marketplaces\openai-bundled'
 
 [marketplaces.openai-primary-runtime]
 last_updated = "2026-05-01T03:12:20Z"
 source_type = "local"
-source = '\\?\C:\Users\imale\.cache\codex-runtimes\codex-primary-runtime\plugins\openai-primary-runtime'
+source = '\\?\{{CODEX_HOME}}\.cache\codex-runtimes\codex-primary-runtime\plugins\openai-primary-runtime'

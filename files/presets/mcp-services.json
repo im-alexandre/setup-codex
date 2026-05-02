@@ -1,9 +1,4 @@
 {
-  "scopus-search": {
-    "services": ["ollama-gpu", "postgres"],
-    "compose_file": "{{CODEX_HOME}}/docker-compose.yml",
-    "required": true
-  },
   "pdf-indexer": {
     "services": ["ollama-gpu", "postgres"],
     "compose_file": "{{CODEX_HOME}}/docker-compose.yml",

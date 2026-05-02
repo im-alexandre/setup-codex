@@ -2,6 +2,7 @@ name = "default"
 description = "Default fallback subagent for unspecified delegated tasks."
 model = "gpt-5.4-mini"
 model_reasoning_effort = "medium"
+apps = false
 
 developer_instructions = """
 Use this agent for any unspecified delegated task.
