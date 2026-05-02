@@ -1,0 +1,4 @@
+interface:
+  display_name: "PDF Indexer"
+  short_description: "Index and search local PDFs with pgvector or Chroma"
+  default_prompt: "Use $pdf-indexer to index local PDFs, inspect collections, and run semantic search over PDF content."
