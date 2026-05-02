@@ -1,58 +1,54 @@
-[CmdletBinding(SupportsShouldProcess = $true)]
 param(
-    [string[]]$McpNames = @(),
-    [string[]]$SkillNames = @(),
-    [string[]]$Services = @(),
-    [string]$CodexHome = (Join-Path $env:USERPROFILE ".codex")
+  [Parameter(Mandatory=$true)]
+  [string[]]$Services,
+
+  [string[]]$Profiles = @(),
+
+  [string]$ComposeFile = (Join-Path $env:USERPROFILE ".codex\docker-compose.yml")
 )
 
 $ErrorActionPreference = "Stop"
 
-$resolvedServices = [System.Collections.Generic.List[string]]::new()
-
-foreach ($service in $Services) {
-    if (![string]::IsNullOrWhiteSpace($service) -and -not $resolvedServices.Contains($service)) {
-        $resolvedServices.Add($service)
-    }
+if (!(Get-Command docker -ErrorAction SilentlyContinue)) {
+  throw "Docker não encontrado no PATH."
 }
 
-if (($McpNames.Count -gt 0) -or ($SkillNames.Count -gt 0)) {
-    $resolveScript = Join-Path $PSScriptRoot "resolve-codex-services.ps1"
-
-    if (!(Test-Path -LiteralPath $resolveScript)) {
-        throw "Script de resolução de serviços não encontrado: $resolveScript"
-    }
-
-    $servicesFromMaps = @(& $resolveScript -McpNames $McpNames -SkillNames $SkillNames -CodexHome $CodexHome)
-
-    foreach ($service in $servicesFromMaps) {
-        if (![string]::IsNullOrWhiteSpace($service) -and -not $resolvedServices.Contains($service)) {
-            $resolvedServices.Add($service)
-        }
-    }
+if (!(Test-Path -LiteralPath $ComposeFile)) {
+  throw "docker-compose.yml não encontrado: $ComposeFile"
 }
 
-$uniqueServices = [System.Collections.Generic.List[string]]::new()
+$uniqueServices = $Services |
+  Where-Object { ![string]::IsNullOrWhiteSpace($_) } |
+  Sort-Object -Unique
 
-foreach ($service in $resolvedServices) {
-    if (![string]::IsNullOrWhiteSpace($service) -and -not $uniqueServices.Contains($service)) {
-        $uniqueServices.Add($service)
-    }
-}
+$uniqueProfiles = $Profiles |
+  Where-Object { ![string]::IsNullOrWhiteSpace($_) } |
+  Sort-Object -Unique
 
 if ($uniqueServices.Count -eq 0) {
-    Write-Host "Nenhum serviço para iniciar."
-    return
+  Write-Host "Nenhum serviço necessário."
+  exit 0
 }
 
-$composeFile = Join-Path $CodexHome "docker-compose.yml"
+$args = @("compose", "-f", $ComposeFile)
 
-if (!(Test-Path -LiteralPath $composeFile)) {
-    throw "Arquivo docker-compose não encontrado: $composeFile"
+foreach ($profile in $uniqueProfiles) {
+  $args += @("--profile", $profile)
 }
 
-if ($PSCmdlet.ShouldProcess($composeFile, ("docker compose up -d {0}" -f ($uniqueServices -join ", ")))) {
-    $docker = Get-Command docker -ErrorAction Stop
-    $arguments = @("compose", "-f", $composeFile, "up", "-d") + $uniqueServices.ToArray()
-    & $docker.Path @arguments
+$args += @("up", "-d")
+$args += $uniqueServices
+
+Write-Host ""
+Write-Host "Iniciando serviços Codex:"
+$uniqueServices | ForEach-Object { Write-Host "- $_" }
+
+if ($uniqueProfiles.Count -gt 0) {
+  Write-Host ""
+  Write-Host "Profiles:"
+  $uniqueProfiles | ForEach-Object { Write-Host "- $_" }
 }
+
+Write-Host ""
+
+& docker @args

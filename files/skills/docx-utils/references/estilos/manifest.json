@@ -1,0 +1,694 @@
+{
+  "generatedAt": "2026-04-30T01:03:34.2165562-03:00",
+  "sourceDocx": "D:\\vaqueiro_dissertacao\\dissertacao-20260426-final.docx",
+  "outputDirectory": "D:\\vaqueiro_dissertacao\\.codex\\docx_utils\\estilos",
+  "styleDefinitionsPart": {
+    "fullXml": "styles.xml",
+    "docDefaults": "docDefaults.xml",
+    "latentStyles": "latentStyles.xml",
+    "styleCount": 85,
+    "styles": [
+      {
+        "source": "styles.xml",
+        "index": 1,
+        "type": "paragraph",
+        "styleId": "Normal",
+        "name": "Normal",
+        "file": "styles/0001_paragraph_Normal_Normal.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 2,
+        "type": "paragraph",
+        "styleId": "Ttulo1",
+        "name": "heading 1",
+        "file": "styles/0002_paragraph_Ttulo1_heading_1.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 3,
+        "type": "paragraph",
+        "styleId": "Ttulo2",
+        "name": "heading 2",
+        "file": "styles/0003_paragraph_Ttulo2_heading_2.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 4,
+        "type": "paragraph",
+        "styleId": "Ttulo3",
+        "name": "heading 3",
+        "file": "styles/0004_paragraph_Ttulo3_heading_3.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 5,
+        "type": "character",
+        "styleId": "Fontepargpadro",
+        "name": "Default Paragraph Font",
+        "file": "styles/0005_character_Fontepargpadro_Default_Paragraph_Font.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 6,
+        "type": "table",
+        "styleId": "Tabelanormal",
+        "name": "Normal Table",
+        "file": "styles/0006_table_Tabelanormal_Normal_Table.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 7,
+        "type": "numbering",
+        "styleId": "Semlista",
+        "name": "No List",
+        "file": "styles/0007_numbering_Semlista_No_List.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 8,
+        "type": "table",
+        "styleId": "Tabelacomgrade",
+        "name": "Table Grid",
+        "file": "styles/0008_table_Tabelacomgrade_Table_Grid.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 9,
+        "type": "paragraph",
+        "styleId": "Cabealho",
+        "name": "header",
+        "file": "styles/0009_paragraph_Cabealho_header.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 10,
+        "type": "character",
+        "styleId": "Nmerodepgina",
+        "name": "page number",
+        "file": "styles/0010_character_Nmerodepgina_page_number.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 11,
+        "type": "paragraph",
+        "styleId": "Rodap",
+        "name": "footer",
+        "file": "styles/0011_paragraph_Rodap_footer.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 12,
+        "type": "paragraph",
+        "styleId": "Textodebalo",
+        "name": "Balloon Text",
+        "file": "styles/0012_paragraph_Textodebalo_Balloon_Text.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 13,
+        "type": "character",
+        "styleId": "TextodebaloChar",
+        "name": "Texto de bal\u00E3o Char",
+        "file": "styles/0013_character_TextodebaloChar_Texto_de_bal\u00E3o_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 14,
+        "type": "character",
+        "styleId": "CabealhoChar",
+        "name": "Cabe\u00E7alho Char",
+        "file": "styles/0014_character_CabealhoChar_Cabe\u00E7alho_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 15,
+        "type": "character",
+        "styleId": "HiperlinkVisitado",
+        "name": "FollowedHyperlink",
+        "file": "styles/0015_character_HiperlinkVisitado_FollowedHyperlink.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 16,
+        "type": "character",
+        "styleId": "TextodoEspaoReservado",
+        "name": "Placeholder Text",
+        "file": "styles/0016_character_TextodoEspaoReservado_Placeholder_Text.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 17,
+        "type": "paragraph",
+        "styleId": "NormalWeb",
+        "name": "Normal (Web)",
+        "file": "styles/0017_paragraph_NormalWeb_Normal_Web.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 18,
+        "type": "character",
+        "styleId": "Refdecomentrio",
+        "name": "annotation reference",
+        "file": "styles/0018_character_Refdecomentrio_annotation_reference.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 19,
+        "type": "paragraph",
+        "styleId": "Textodecomentrio",
+        "name": "annotation text",
+        "file": "styles/0019_paragraph_Textodecomentrio_annotation_text.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 20,
+        "type": "character",
+        "styleId": "TextodecomentrioChar",
+        "name": "Texto de coment\u00E1rio Char",
+        "file": "styles/0020_character_TextodecomentrioChar_Texto_de_coment\u00E1rio_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 21,
+        "type": "paragraph",
+        "styleId": "Assuntodocomentrio",
+        "name": "annotation subject",
+        "file": "styles/0021_paragraph_Assuntodocomentrio_annotation_subject.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 22,
+        "type": "character",
+        "styleId": "AssuntodocomentrioChar",
+        "name": "Assunto do coment\u00E1rio Char",
+        "file": "styles/0022_character_AssuntodocomentrioChar_Assunto_do_coment\u00E1rio_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 23,
+        "type": "paragraph",
+        "styleId": "CaptionCustom",
+        "name": "CaptionCustom",
+        "file": "styles/0023_paragraph_CaptionCustom_CaptionCustom.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 24,
+        "type": "table",
+        "styleId": "Tabelacomgrade3",
+        "name": "Tabela com grade3",
+        "file": "styles/0024_table_Tabelacomgrade3_Tabela_com_grade3.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 25,
+        "type": "table",
+        "styleId": "Tabelacomgrade2",
+        "name": "Tabela com grade2",
+        "file": "styles/0025_table_Tabelacomgrade2_Tabela_com_grade2.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 26,
+        "type": "paragraph",
+        "styleId": "Corpodetexto",
+        "name": "Body Text",
+        "file": "styles/0026_paragraph_Corpodetexto_Body_Text.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 27,
+        "type": "character",
+        "styleId": "CorpodetextoChar",
+        "name": "Corpo de texto Char",
+        "file": "styles/0027_character_CorpodetextoChar_Corpo_de_texto_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 28,
+        "type": "paragraph",
+        "styleId": "FirstParagraph",
+        "name": "First Paragraph",
+        "file": "styles/0028_paragraph_FirstParagraph_First_Paragraph.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 29,
+        "type": "character",
+        "styleId": "VerbatimChar",
+        "name": "Verbatim Char",
+        "file": "styles/0029_character_VerbatimChar_Verbatim_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 30,
+        "type": "paragraph",
+        "styleId": "SourceCode",
+        "name": "Source Code",
+        "file": "styles/0030_paragraph_SourceCode_Source_Code.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 31,
+        "type": "table",
+        "styleId": "Table",
+        "name": "Table",
+        "file": "styles/0031_table_Table_Table.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 32,
+        "type": "paragraph",
+        "styleId": "CabealhodoSumrio",
+        "name": "TOC Heading",
+        "file": "styles/0032_paragraph_CabealhodoSumrio_TOC_Heading.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 33,
+        "type": "paragraph",
+        "styleId": "Ttulo",
+        "name": "Title",
+        "file": "styles/0033_paragraph_Ttulo_Title.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 34,
+        "type": "character",
+        "styleId": "TtuloChar",
+        "name": "T\u00EDtulo Char",
+        "file": "styles/0034_character_TtuloChar_T\u00EDtulo_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 35,
+        "type": "paragraph",
+        "styleId": "Subttulo",
+        "name": "Subtitle",
+        "file": "styles/0035_paragraph_Subttulo_Subtitle.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 36,
+        "type": "character",
+        "styleId": "SubttuloChar",
+        "name": "Subt\u00EDtulo Char",
+        "file": "styles/0036_character_SubttuloChar_Subt\u00EDtulo_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 37,
+        "type": "paragraph",
+        "styleId": "Estilo1",
+        "name": "Estilo1",
+        "file": "styles/0037_paragraph_Estilo1_Estilo1.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 38,
+        "type": "table",
+        "styleId": "tabelaabnt",
+        "name": "tabela_abnt",
+        "file": "styles/0038_table_tabelaabnt_tabela_abnt.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 39,
+        "type": "table",
+        "styleId": "estilotabela",
+        "name": "estilo_tabela",
+        "file": "styles/0039_table_estilotabela_estilo_tabela.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 40,
+        "type": "table",
+        "styleId": "Tabelaelegante",
+        "name": "Table Elegant",
+        "file": "styles/0040_table_Tabelaelegante_Table_Elegant.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 41,
+        "type": "character",
+        "styleId": "MenoPendente",
+        "name": "Unresolved Mention",
+        "file": "styles/0041_character_MenoPendente_Unresolved_Mention.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 42,
+        "type": "table",
+        "styleId": "TabeladeGradeClara",
+        "name": "Grid Table Light",
+        "file": "styles/0042_table_TabeladeGradeClara_Grid_Table_Light.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 43,
+        "type": "character",
+        "styleId": "Ttulo3Char",
+        "name": "T\u00EDtulo 3 Char",
+        "file": "styles/0043_character_Ttulo3Char_T\u00EDtulo_3_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 44,
+        "type": "paragraph",
+        "styleId": "Legenda",
+        "name": "caption",
+        "file": "styles/0044_paragraph_Legenda_caption.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 45,
+        "type": "paragraph",
+        "styleId": "Sumrio1",
+        "name": "toc 1",
+        "file": "styles/0045_paragraph_Sumrio1_toc_1.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 46,
+        "type": "paragraph",
+        "styleId": "Sumrio2",
+        "name": "toc 2",
+        "file": "styles/0046_paragraph_Sumrio2_toc_2.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 47,
+        "type": "paragraph",
+        "styleId": "Sumrio3",
+        "name": "toc 3",
+        "file": "styles/0047_paragraph_Sumrio3_toc_3.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 48,
+        "type": "character",
+        "styleId": "Ttulo2Char",
+        "name": "T\u00EDtulo 2 Char",
+        "file": "styles/0048_character_Ttulo2Char_T\u00EDtulo_2_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 49,
+        "type": "paragraph",
+        "styleId": "Sumrio4",
+        "name": "toc 4",
+        "file": "styles/0049_paragraph_Sumrio4_toc_4.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 50,
+        "type": "paragraph",
+        "styleId": "Sumrio5",
+        "name": "toc 5",
+        "file": "styles/0050_paragraph_Sumrio5_toc_5.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 51,
+        "type": "paragraph",
+        "styleId": "Sumrio6",
+        "name": "toc 6",
+        "file": "styles/0051_paragraph_Sumrio6_toc_6.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 52,
+        "type": "paragraph",
+        "styleId": "Sumrio7",
+        "name": "toc 7",
+        "file": "styles/0052_paragraph_Sumrio7_toc_7.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 53,
+        "type": "paragraph",
+        "styleId": "Sumrio8",
+        "name": "toc 8",
+        "file": "styles/0053_paragraph_Sumrio8_toc_8.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 54,
+        "type": "paragraph",
+        "styleId": "Sumrio9",
+        "name": "toc 9",
+        "file": "styles/0054_paragraph_Sumrio9_toc_9.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 55,
+        "type": "paragraph",
+        "styleId": "Reviso",
+        "name": "Revision",
+        "file": "styles/0055_paragraph_Reviso_Revision.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 56,
+        "type": "paragraph",
+        "styleId": "dados",
+        "name": "dados",
+        "file": "styles/0056_paragraph_dados_dados.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 57,
+        "type": "paragraph",
+        "styleId": "equacao",
+        "name": "equacao",
+        "file": "styles/0057_paragraph_equacao_equacao.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 58,
+        "type": "character",
+        "styleId": "equacaoChar",
+        "name": "equacao Char",
+        "file": "styles/0058_character_equacaoChar_equacao_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 59,
+        "type": "paragraph",
+        "styleId": "extratexto",
+        "name": "extra_texto",
+        "file": "styles/0059_paragraph_extratexto_extra_texto.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 60,
+        "type": "character",
+        "styleId": "extratextoChar",
+        "name": "extra_texto Char",
+        "file": "styles/0060_character_extratextoChar_extra_texto_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 61,
+        "type": "paragraph",
+        "styleId": "Figura",
+        "name": "Figura",
+        "file": "styles/0061_paragraph_Figura_Figura.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 62,
+        "type": "character",
+        "styleId": "FiguraChar",
+        "name": "Figura Char",
+        "file": "styles/0062_character_FiguraChar_Figura_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 63,
+        "type": "character",
+        "styleId": "Forte",
+        "name": "Strong",
+        "file": "styles/0063_character_Forte_Strong.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 64,
+        "type": "character",
+        "styleId": "Hyperlink",
+        "name": "Hyperlink",
+        "file": "styles/0064_character_Hyperlink_Hyperlink.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 65,
+        "type": "paragraph",
+        "styleId": "legenda0",
+        "name": "legenda",
+        "file": "styles/0065_paragraph_legenda0_legenda.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 66,
+        "type": "character",
+        "styleId": "legendaChar",
+        "name": "legenda Char",
+        "file": "styles/0066_character_legendaChar_legenda_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 67,
+        "type": "paragraph",
+        "styleId": "listafiguras",
+        "name": "lista_figuras",
+        "file": "styles/0067_paragraph_listafiguras_lista_figuras.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 68,
+        "type": "character",
+        "styleId": "listafigurasChar",
+        "name": "lista_figuras Char",
+        "file": "styles/0068_character_listafigurasChar_lista_figuras_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 69,
+        "type": "paragraph",
+        "styleId": "ndicedeilustraes",
+        "name": "table of figures",
+        "file": "styles/0069_paragraph_ndicedeilustraes_table_of_figures.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 70,
+        "type": "character",
+        "styleId": "ndicedeilustraesChar",
+        "name": "\u00CDndice de ilustra\u00E7\u00F5es Char",
+        "file": "styles/0070_character_ndicedeilustraesChar_\u00CDndice_de_ilustra\u00E7\u00F5es_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 71,
+        "type": "paragraph",
+        "styleId": "PargrafodaLista",
+        "name": "List Paragraph",
+        "file": "styles/0071_paragraph_PargrafodaLista_List_Paragraph.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 72,
+        "type": "paragraph",
+        "styleId": "PRIMARIA",
+        "name": "PRIMARIA",
+        "file": "styles/0072_paragraph_PRIMARIA_PRIMARIA.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 73,
+        "type": "character",
+        "styleId": "PRIMARIAChar",
+        "name": "PRIMARIA Char",
+        "file": "styles/0073_character_PRIMARIAChar_PRIMARIA_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 74,
+        "type": "paragraph",
+        "styleId": "Recuodecorpodetexto",
+        "name": "Body Text Indent",
+        "file": "styles/0074_paragraph_Recuodecorpodetexto_Body_Text_Indent.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 75,
+        "type": "paragraph",
+        "styleId": "RefUERJ",
+        "name": "Ref UERJ",
+        "file": "styles/0075_paragraph_RefUERJ_Ref_UERJ.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 76,
+        "type": "paragraph",
+        "styleId": "SECUNDARIA",
+        "name": "SECUNDARIA",
+        "file": "styles/0076_paragraph_SECUNDARIA_SECUNDARIA.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 77,
+        "type": "character",
+        "styleId": "SECUNDARIAChar",
+        "name": "SECUNDARIA Char",
+        "file": "styles/0077_character_SECUNDARIAChar_SECUNDARIA_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 78,
+        "type": "paragraph",
+        "styleId": "Tabela",
+        "name": "Tabela",
+        "file": "styles/0078_paragraph_Tabela_Tabela.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 79,
+        "type": "character",
+        "styleId": "TabelaChar",
+        "name": "Tabela Char",
+        "file": "styles/0079_character_TabelaChar_Tabela_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 80,
+        "type": "table",
+        "styleId": "tabelauerj",
+        "name": "tabela_uerj",
+        "file": "styles/0080_table_tabelauerj_tabela_uerj.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 81,
+        "type": "paragraph",
+        "styleId": "terciaria",
+        "name": "terciaria",
+        "file": "styles/0081_paragraph_terciaria_terciaria.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 82,
+        "type": "character",
+        "styleId": "terciariaChar",
+        "name": "terciaria Char",
+        "file": "styles/0082_character_terciariaChar_terciaria_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 83,
+        "type": "paragraph",
+        "styleId": "Titulo2",
+        "name": "Titulo 2",
+        "file": "styles/0083_paragraph_Titulo2_Titulo_2.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 84,
+        "type": "character",
+        "styleId": "Titulo2Char",
+        "name": "Titulo 2 Char",
+        "file": "styles/0084_character_Titulo2Char_Titulo_2_Char.xml"
+      },
+      {
+        "source": "styles.xml",
+        "index": 85,
+        "type": "character",
+        "styleId": "Ttulo1Char",
+        "name": "T\u00EDtulo 1 Char",
+        "file": "styles/0085_character_Ttulo1Char_T\u00EDtulo_1_Char.xml"
+      }
+    ]
+  },
+  "stylesWithEffectsPart": null
+}

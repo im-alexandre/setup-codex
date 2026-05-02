@@ -4,6 +4,9 @@ model = "gpt-5.4-mini"
 model_reasoning_effort = "medium"
 apps = false
 
+[features]
+apps = false
+
 developer_instructions = """
 Use this agent for scoped implementation tasks.
 Keep changes small.

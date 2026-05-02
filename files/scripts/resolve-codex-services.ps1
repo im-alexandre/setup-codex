@@ -1,88 +1,54 @@
-[CmdletBinding()]
 param(
-    [string[]]$McpNames = @(),
-    [string[]]$SkillNames = @(),
-    [string]$CodexHome = (Join-Path $env:USERPROFILE ".codex")
+  [string[]]$Mcps = @(),
+  [string[]]$Skills = @()
 )
 
 $ErrorActionPreference = "Stop"
 
-function Read-ServiceMap {
-    param([Parameter(Mandatory = $true)][string]$Path)
+$Root = Join-Path $env:USERPROFILE ".codex"
+$McpServicesPath = Join-Path $Root "presets\mcp-services.json"
+$SkillServicesPath = Join-Path $Root "presets\skills-services.json"
 
-    if (!(Test-Path -LiteralPath $Path)) {
-        return @{}
+$services = @()
+$profiles = @()
+
+function Add-Entry {
+  param($Entry)
+
+  foreach ($svc in @($Entry.services)) {
+    if (![string]::IsNullOrWhiteSpace($svc)) {
+      $script:services += $svc
     }
+  }
 
-    $raw = Get-Content -LiteralPath $Path -Raw
-
-    if ([string]::IsNullOrWhiteSpace($raw)) {
-        return @{}
+  foreach ($profile in @($Entry.profiles)) {
+    if (![string]::IsNullOrWhiteSpace($profile)) {
+      $script:profiles += $profile
     }
-
-    return ($raw | ConvertFrom-Json -AsHashtable)
+  }
 }
 
-function Add-ResolvedServices {
-    param(
-        [Parameter(Mandatory = $true)]$Entry,
-        [System.Collections.Generic.List[string]]$Services
-    )
+if ((Test-Path -LiteralPath $McpServicesPath) -and $Mcps.Count -gt 0) {
+  $mcpServices = Get-Content -LiteralPath $McpServicesPath -Raw | ConvertFrom-Json
 
-    $candidateServices = @()
-
-    if ($Entry -is [System.Collections.IDictionary]) {
-        $candidateServices = @($Entry['services'])
-    } elseif ($Entry.PSObject.Properties.Name -contains 'services') {
-        $candidateServices = @($Entry.services)
+  foreach ($mcp in $Mcps) {
+    if ($mcpServices.PSObject.Properties.Name -contains $mcp) {
+      Add-Entry $mcpServices.$mcp
     }
-
-    foreach ($service in $candidateServices) {
-        if (![string]::IsNullOrWhiteSpace([string]$service) -and -not $Services.Contains([string]$service)) {
-            $Services.Add([string]$service)
-        }
-    }
+  }
 }
 
-$mcpServicesPath = Join-Path $CodexHome "presets\mcp-services.json"
-$skillServicesPath = Join-Path $CodexHome "presets\skill-services.json"
+if ((Test-Path -LiteralPath $SkillServicesPath) -and $Skills.Count -gt 0) {
+  $skillServices = Get-Content -LiteralPath $SkillServicesPath -Raw | ConvertFrom-Json
 
-$mcpRegistry = Read-ServiceMap -Path $mcpServicesPath
-$skillRegistry = Read-ServiceMap -Path $skillServicesPath
-
-$resolved = [System.Collections.Generic.List[string]]::new()
-$missing = [System.Collections.Generic.List[string]]::new()
-
-foreach ($name in $McpNames) {
-    if ([string]::IsNullOrWhiteSpace($name)) {
-        continue
+  foreach ($skill in $Skills) {
+    if ($skillServices.PSObject.Properties.Name -contains $skill) {
+      Add-Entry $skillServices.$skill
     }
-
-    $entry = $mcpRegistry[$name]
-
-    if ($null -ne $entry) {
-        Add-ResolvedServices -Entry $entry -Services $resolved
-    } else {
-        $missing.Add("mcp:$name")
-    }
+  }
 }
 
-foreach ($name in $SkillNames) {
-    if ([string]::IsNullOrWhiteSpace($name)) {
-        continue
-    }
-
-    $entry = $skillRegistry[$name]
-
-    if ($null -ne $entry) {
-        Add-ResolvedServices -Entry $entry -Services $resolved
-    } else {
-        $missing.Add("skill:$name")
-    }
-}
-
-if ($missing.Count -gt 0) {
-    Write-Warning ("Serviços não encontrados para: {0}" -f ($missing -join ", "))
-}
-
-$resolved
+[pscustomobject]@{
+  services = @($services | Sort-Object -Unique)
+  profiles = @($profiles | Sort-Object -Unique)
+} | ConvertTo-Json -Depth 10

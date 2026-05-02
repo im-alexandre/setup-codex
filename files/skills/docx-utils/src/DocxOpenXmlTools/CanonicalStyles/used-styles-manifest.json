@@ -1,0 +1,36 @@
+﻿{
+  "source": "D:\\dissertacao\\dissertacao_versoes\\dissertacao-20260425.docx",
+  "exportedUtc": "2026-04-27T00:30:46.4153749Z",
+  "paragraphStyles": [
+    "dados",
+    "equacao",
+    "extratexto",
+    "Figura",
+    "legenda",
+    "listafiguras",
+    "ndicedeilustraes",
+    "Normal",
+    "PargrafodaLista",
+    "PRIMARIA",
+    "Recuodecorpodetexto",
+    "RefUERJ",
+    "SECUNDARIA",
+    "Tabela",
+    "terciaria",
+    "Ttulo1"
+  ],
+  "characterStyles": [
+    "Forte",
+    "Hyperlink"
+  ],
+  "tableStyles": [
+    "tabelauerj"
+  ],
+  "numberingIds": [
+    "0",
+    "28",
+    "29",
+    "35",
+    "38"
+  ]
+}

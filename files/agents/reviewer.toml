@@ -5,6 +5,9 @@ model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
 apps = false
 
+[features]
+apps = false
+
 developer_instructions = """
 Use this agent for review, validation, bug finding and risk checks.
 Do not edit files.
