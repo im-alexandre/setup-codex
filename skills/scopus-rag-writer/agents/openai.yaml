@@ -1,0 +1,9 @@
+interface:
+  display_name: "Scopus RAG Writer"
+  short_description: "Write academic text from local Scopus/PDF RAG evidence with ABNT citations"
+  default_prompt: |
+    Use $scopus-rag-writer.
+
+    Collection:
+    Writing task:
+    Topic or outline:

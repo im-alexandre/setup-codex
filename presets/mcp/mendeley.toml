@@ -1,0 +1,10 @@
+[mcp_servers.mendeley]
+command = "powershell"
+args = [
+  "-NoProfile",
+  "-ExecutionPolicy",
+  "Bypass",
+  "-File",
+  "C:/Users/imale/.codex/scripts/start-mendeley-mcp.ps1"
+]
+startup_timeout_sec = 60.0

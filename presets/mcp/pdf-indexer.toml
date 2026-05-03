@@ -1,0 +1,10 @@
+[mcp_servers.pdf-indexer]
+command = "powershell"
+args = [
+  "-NoProfile",
+  "-ExecutionPolicy",
+  "Bypass",
+  "-File",
+  "C:/Users/imale/.codex/scripts/start-pdf-indexer-mcp.ps1"
+]
+startup_timeout_sec = 60.0

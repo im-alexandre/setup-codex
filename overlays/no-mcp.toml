@@ -1,0 +1,21 @@
+model = "gpt-5.4"
+model_reasoning_effort = "low"
+plan_mode_reasoning_effort = "low"
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+
+[features]
+memories = false
+
+[memories]
+use_memories = false
+generate_memories = false
+
+[mcp_servers.scopus-search]
+enabled = false
+
+[mcp_servers.pdf-indexer]
+enabled = false
+
+[mcp_servers.zotero]
+enabled = false

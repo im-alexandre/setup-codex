@@ -1,0 +1,8 @@
+interface:
+  display_name: "Scopus Review"
+  short_description: "Revise academic text using local Scopus/PDF evidence and ABNT citations"
+  default_prompt: |
+    Use $scopus-review.
+
+    Collection:
+    Text:

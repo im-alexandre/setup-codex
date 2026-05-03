@@ -1,112 +1,42 @@
-# codex-setup
+# Codex Home
 
-Repositório-fonte para instalar a base local do Codex em `%USERPROFILE%\.codex`.
+Este diretório é o `CODEX_HOME` versionável desta máquina.
 
-Este repo não é o runtime. A fonte versionada fica em `files/`; o runtime instalado fica em `%USERPROFILE%\.codex`.
+## O Que Fica Versionado
 
-## Estrutura
+- `AGENTS.md`
+- `config.toml`
+- `agents/`
+- `hooks/`
+- `mcp/`
+- `overlays/`
+- `preset/`
+- `presets/`
+- `rules/`
+- `scripts/`
+- `skills/`
+- `docker-compose.yml`
+- `mcps.toml`
 
-```text
-install_codex.ps1
-files/
-  AGENTS.md
-  config.template.toml
-  docker-compose.yml
-  agents/
-  hooks/
-  mcp/
-  presets/
-    base-project.toml
-    mcp-services.json
-    skill-services.json
-    mcp/
-      mendeley.template.toml
-      openai-docs.template.toml
-      pdf-indexer.template.toml
-      zotero.template.toml
-  scripts/
-    bootstrap-codex-project.ps1
-    resolve-codex-services.ps1
-    start-codex-services.ps1
-    start-mendeley-mcp.ps1
-    start-pdf-indexer-mcp.ps1
-  skills/
-```
+## O Que Não Deve Ser Versionado
 
-## Instalação
+O `.gitignore` exclui estado local, segredos, sessões, logs, bancos SQLite, caches, plugins baixados, ambientes virtuais, artefatos de build e backups.
 
-```powershell
-.\install_codex.ps1
-```
-
-O instalador:
-
-- descobre o root pelo caminho do próprio `install_codex.ps1`;
-- copia arquivo a arquivo de `files/` para `%USERPROFILE%\.codex`;
-- cria backup `.bak-YYYYMMDD-HHMMSS` antes de sobrescrever qualquer arquivo existente;
-- converte cada `*.template.toml` instalado para `.toml`;
-- substitui `{{CODEX_HOME}}` por um caminho absoluto com `/` nos templates TOML;
-- ignora caches, bancos locais, logs, ambientes virtuais e artefatos temporários;
-- ajusta `presets/mcp-services.json` e `presets/skill-services.json` para `ollama-cpu` quando não há GPU NVIDIA detectada;
-- mantém `ollama-gpu` como padrão quando a máquina tem NVIDIA.
-
-## MCPs e skills
-
-MCPs disponíveis por preset:
-
-- `mendeley`
-- `openai-docs`
-- `pdf-indexer`
-- `zotero`
-
-`scopus-search` não é MCP. Ele é instalado e usado como skill.
-
-Mapas de serviços:
-
-- `files/presets/mcp-services.json`: serviços Docker usados pelos MCPs.
-- `files/presets/skill-services.json`: serviços Docker usados pelas skills.
-
-`scopus-search` aparece apenas em `skill-services.json`, e o resolver trata esse nome como skill, não como MCP.
-
-Os dois mapas podem apontar para os mesmos serviços Docker, mas a origem do nome é diferente: o bootstrap recebe os MCPs selecionados, enquanto `resolve-codex-services.ps1` e `start-codex-services.ps1` cuidam dos mapas de serviço. Nesse fluxo, `mcp-services.json` cobre MCPs e `skill-services.json` cobre skills.
-
-## Serviços
-
-Resolver serviços:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\.codex\scripts\resolve-codex-services.ps1" -SkillNames scopus-search
-```
-
-Subir serviços:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\.codex\scripts\start-codex-services.ps1" -SkillNames scopus-search
-```
-
-O compose instalado fica em `%USERPROFILE%\.codex\docker-compose.yml`.
-
-## Bootstrap de projeto
-
-```powershell
-powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\.codex\scripts\bootstrap-codex-project.ps1" -ProjectPath "D:\algum-projeto"
-```
-
-O bootstrap:
-
-- recebe os MCPs selecionados pelo usuário;
-- monta ou atualiza `.codex\config.toml` no projeto;
-- cria backup local de `config.toml` antes de sobrescrever;
-- resolve os serviços exigidos pelos MCPs selecionados;
-- sobe automaticamente os serviços Docker necessários quando há serviços resolvidos;
-- não edita `%USERPROFILE%\.codex\config.toml`.
+Arquivos como `auth.json`, `installation_id`, `logs_2.sqlite*`, `state_5.sqlite*`, `sessions/`, `plugins/`, `.tmp/` e `cache/` são runtime local do Codex e devem ficar fora do Git.
 
 ## Validação
 
 ```powershell
-git diff --check
-powershell -NoProfile -Command "[System.Management.Automation.Language.Parser]::ParseFile((Join-Path (Get-Location) 'install_codex.ps1'),[ref]$null,[ref]$null).Errors.Count"
-powershell -NoProfile -Command "Get-Content (Join-Path (Get-Location) 'files/presets/mcp-services.json') -Raw | ConvertFrom-Json | Out-Null"
-powershell -NoProfile -Command "Get-Content (Join-Path (Get-Location) 'files/presets/skill-services.json') -Raw | ConvertFrom-Json | Out-Null"
-docker compose -f files\docker-compose.yml config --quiet
+python -c "import pathlib, tomllib; tomllib.loads(pathlib.Path('config.toml').read_text(encoding='utf-8')); print('config.toml ok')"
+git status --ignored --short
+```
+
+## Observação Sobre Arquivos Bloqueados
+
+Enquanto o Codex estiver aberto, alguns bancos SQLite podem ficar bloqueados e não podem ser movidos ou removidos. Para limpar fisicamente esses arquivos, feche todas as sessões Codex e remova:
+
+```powershell
+Remove-Item -LiteralPath "$env:USERPROFILE\.codex\logs_2.sqlite*" -Force
+Remove-Item -LiteralPath "$env:USERPROFILE\.codex\state_5.sqlite*" -Force
+Remove-Item -LiteralPath "$env:USERPROFILE\.codex\sqlite" -Recurse -Force
 ```

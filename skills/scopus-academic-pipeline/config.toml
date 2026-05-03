@@ -1,0 +1,6 @@
+# Optional local profile for scopus-academic-pipeline.
+# Keep only shell available when using local deterministic scripts.
+# Enable only the MCPs explicitly needed by a project/runtime.
+
+[mcp_servers.openaiDeveloperDocs]
+enabled = false

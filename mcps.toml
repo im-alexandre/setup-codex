@@ -1,0 +1,36 @@
+[mcp_servers.local-llm]
+command = "python"
+args = ["D:/mcp/server_llm.py"]
+startup_timeout_sec = 20.0
+
+[mcp_servers.local-llm.tools.generate]
+approval_mode = "approve"
+
+[mcp_servers.scopus-search]
+command = "python"
+args = ["D:/mcp/server_scopus.py"]
+startup_timeout_sec = 30.0
+
+[mcp_servers.scopus-search.env]
+CHROMA_DIR = "C:/Users/imale/.codex/mcp/scopus/chroma"
+
+[mcp_servers.scopus-search.tools.collection_stats]
+approval_mode = "approve"
+
+[mcp_servers.scopus-search.tools.index_csv]
+approval_mode = "approve"
+
+[mcp_servers.scopus-search.tools.search]
+approval_mode = "approve"
+
+[mcp_servers.pdf-indexer]
+command = "python"
+args = ["D:/mcp/pdf-indexer-mcp/semantic_chunked_pdf_rag.py"]
+startup_timeout_sec = 30.0
+
+[mcp_servers.jupyter-notebook]
+url = "http://localhost:3001/mcp"
+
+[notice]
+hide_full_access_warning = true
+hide_rate_limit_model_nudge = true

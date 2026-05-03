@@ -1,0 +1,10 @@
+interface:
+  display_name: "Scopus Academic Pipeline"
+  short_description: "Plan, write, audit, and revise academic text from local Scopus/PDF RAG evidence"
+  default_prompt: |
+    Use $scopus-academic-pipeline.
+
+    Mode: article planning | RAG writing | evidence review
+    Collection:
+    Task:
+    Topic / experiment / outline:

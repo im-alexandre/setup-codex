@@ -1,0 +1,4 @@
+interface:
+  display_name: "Scopus Search"
+  short_description: "Search and index local Scopus exports with PostgreSQL and pgvector"
+  default_prompt: "Use $scopus-search to list, inspect, index, and search local Scopus pgvector collections. For any operation with this skill, spawn a worker subagent with shell-only execution, keep the main thread responsive, and report concise Portuguese status summaries."
