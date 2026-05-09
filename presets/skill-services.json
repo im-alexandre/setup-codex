@@ -1,6 +1,6 @@
 {
   "index-kit": {
-    "services": ["ollama-gpu", "postgres"],
+    "services": ["ollama-cpu", "postgres"],
     "required": true
   }
 }
