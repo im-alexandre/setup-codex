@@ -1,4 +1,4 @@
 interface:
-  display_name: "DOCX Open XML Utilities"
-  short_description: "Automate DOCX inspection and tracked Open XML edits"
-  default_prompt: "Use -utils for DOCX inspection, validation, tracked revisions, comments, figures, tables, equations, canonical styles, and audited Open XML document mutation."
+  display_name: "docx-utils"
+  short_description: "Automatiza inspeção, validação e edições auditáveis em arquivos DOCX com Open XML."
+  default_prompt: "Use docx-útils para inspeção, validação, revisões rastreadas, comentários, figuras, tabelas, equações, estilos canônicos e mutações auditáveis de documentos DOCX/Open XML."

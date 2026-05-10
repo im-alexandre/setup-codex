@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Reflection;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Xsl;
@@ -26,7 +27,7 @@ if (args.Length == 1 && IsHelpArgument(args[0]))
     return 0;
 }
 
-if (args.Length < 2)
+if (args.Length == 0)
 {
     PrintUsage();
     return 1;
@@ -40,6 +41,54 @@ if (command is "help" or "-h" or "--help" or "/?")
     return 0;
 }
 
+if (command is "plan-contracts" or "plan-contract")
+{
+    var targetCommand = args.Length >= 2 && !args[1].StartsWith('-')
+        ? args[1].Trim().ToLowerInvariant()
+        : null;
+    var optionOffset = targetCommand is null ? 1 : 2;
+    var contractOptions = ParseOptions(args.Skip(optionOffset).ToArray());
+    var format = contractOptions.TryGetValue("format", out var formatValue) && !string.IsNullOrWhiteSpace(formatValue)
+        ? formatValue.Trim().ToLowerInvariant()
+        : "markdown";
+    return PlanContractSupport.PrintPlanContracts(targetCommand, format);
+}
+
+if (command is "create-article")
+{
+    return ArticleDocxBuilderBridge.Run(args.Skip(1).ToArray());
+}
+
+if (command is "create-docx")
+{
+    if (args.Length < 2)
+    {
+        PrintUsage();
+        return 1;
+    }
+
+    return CreateDocxCommand(args.Skip(1).ToArray());
+}
+
+if (command is "validate-plan")
+{
+    if (args.Length < 3)
+    {
+        PrintUsage();
+        return 1;
+    }
+
+    var targetCommand = args[1].Trim().ToLowerInvariant();
+    var validationOptions = ParseOptions(args.Skip(2).ToArray());
+    return ValidatePlan(targetCommand, validationOptions);
+}
+
+if (args.Length < 2)
+{
+    PrintUsage();
+    return 1;
+}
+
 var docxPath = Path.GetFullPath(args[1]);
 
 if (!File.Exists(docxPath))
@@ -48,58 +97,59 @@ if (!File.Exists(docxPath))
     return 2;
 }
 
-var options = ParseOptions(args.Skip(2).ToArray());
+var commandOptions = ParseOptions(args.Skip(2).ToArray());
 
 return command switch
 {
-    "paragraphs" => ListParagraphs(docxPath, options),
-    "paragraph-detail" => ParagraphDetail(docxPath, options),
-    "structure-audit" => StructureAudit(docxPath, options),
-    "layout-audit" => LayoutAudit(docxPath, options),
-    "equations-audit" => EquationsAudit(docxPath, options),
-    "math-audit" => MathAudit(docxPath, options),
-    "math-text-audit" => MathTextAudit(docxPath, options),
-    "linear-equation-plan-preview" => LinearEquationPlanPreview(docxPath, options),
-    "revisions" => ListRevisions(docxPath, options),
-    "comments" => ListComments(docxPath, options),
-    "comment-anchors" => ListCommentAnchors(docxPath, options),
+    "paragraphs" => ListParagraphs(docxPath, commandOptions),
+    "paragraph-detail" => ParagraphDetail(docxPath, commandOptions),
+    "structure-audit" => StructureAudit(docxPath, commandOptions),
+    "layout-audit" => LayoutAudit(docxPath, commandOptions),
+    "equations-audit" => EquationsAudit(docxPath, commandOptions),
+    "math-audit" => MathAudit(docxPath, commandOptions),
+    "math-text-audit" => MathTextAudit(docxPath, commandOptions),
+    "linear-equation-plan-preview" => LinearEquationPlanPreview(docxPath, commandOptions),
+    "revisions" => ListRevisions(docxPath, commandOptions),
+    "comments" => ListComments(docxPath, commandOptions),
+    "comment-anchors" => ListCommentAnchors(docxPath, commandOptions),
     "validate" => Validate(docxPath),
-    "export-used-styles" => ExportUsedStyles(docxPath, options),
-    "ensure-canonical-styles" => EnsureCanonicalStylesCommand(docxPath, options),
-    "sync-styles-from-docx" => SyncStylesFromDocxCommand(docxPath, options),
-    "insert-tracked" => InsertTracked(docxPath, options),
-    "insert-blocks" => InsertBlocks(docxPath, options),
-    "edit-paragraphs" => EditParagraphs(docxPath, options),
-    "rewrite-equation-blocks" => RewriteEquationBlocks(docxPath, options),
-    "format-equation-paragraphs" => FormatEquationParagraphs(docxPath, options),
-    "style-running-text" => StyleRunningText(docxPath, options),
-    "ensure-style-fonts" => EnsureStyleFonts(docxPath, options),
-    "enable-update-fields-on-open" => EnableUpdateFieldsOnOpen(docxPath, options),
-    "disable-update-fields-on-open" => DisableUpdateFieldsOnOpen(docxPath, options),
-    "normalize-figure-indent" => NormalizeFigureIndent(docxPath, options),
-    "apply-table-design-style" => ApplyTableDesignStyle(docxPath, options),
-    "replace-table" => ReplaceTable(docxPath, options),
-    "replace-figures-from-plan" => ReplaceFiguresFromPlan(docxPath, options),
-    "replace-formulas-with-linear-equations" => ReplaceFormulasWithLinearOfficeMath(docxPath, options),
-    "replace-formulas-with-mathml-omml" => ReplaceFormulasWithMathMlOfficeMath(docxPath, options),
-    "convert-text-formulas-to-omath" => ConvertTextFormulasToOfficeMath(docxPath, options),
-    "repair-article-abnt-layout" => RepairArticleAbntLayout(docxPath, options),
-    "format-abnt-reference-titles" => FormatAbntReferenceTitles(docxPath, options),
-    "repair-validation" => RepairValidation(docxPath, options),
-    "apply-crossrefs" => ApplyCrossrefs(docxPath, options),
-    "add-bookmarks" => AddBookmarks(docxPath, options),
-    "rewrite-ref-fields" => RewriteRefFields(docxPath, options),
-    "repair-style-captions" => RepairStyleCaptions(docxPath, options),
-    "repair-layout-pendencies" => RepairLayoutPendencies(docxPath, options),
-    "repair-ref-number-only" => RepairRefNumberOnly(docxPath, options),
-    "insert-figures" => InsertFigures(docxPath, options),
-    "insert-comments" => InsertComments(docxPath, options),
-    "reanchor-comments" => ReanchorComments(docxPath, options),
-    "answer-comments" => AnswerComments(docxPath, options),
-    "reply-comments" => ReplyComments(docxPath, options),
-    "remove-comments" => RemoveComments(docxPath, options),
-    "append-paragraphs" => AppendParagraphs(docxPath, options),
-    "accept-revisions" => AcceptRevisions(docxPath, options),
+    "export-used-styles" => ExportUsedStyles(docxPath, commandOptions),
+    "ensure-canonical-styles" => EnsureCanonicalStylesCommand(docxPath, commandOptions),
+    "sync-styles-from-docx" => SyncStylesFromDocxCommand(docxPath, commandOptions),
+    "insert-tracked" => InsertTracked(docxPath, commandOptions),
+    "insert-blocks" => InsertBlocks(docxPath, commandOptions),
+    "replace-blocks" => ReplaceBlocks(docxPath, commandOptions),
+    "edit-paragraphs" => EditParagraphs(docxPath, commandOptions),
+    "rewrite-equation-blocks" => RewriteEquationBlocks(docxPath, commandOptions),
+    "format-equation-paragraphs" => FormatEquationParagraphs(docxPath, commandOptions),
+    "style-running-text" => StyleRunningText(docxPath, commandOptions),
+    "ensure-style-fonts" => EnsureStyleFonts(docxPath, commandOptions),
+    "enable-update-fields-on-open" => EnableUpdateFieldsOnOpen(docxPath, commandOptions),
+    "disable-update-fields-on-open" => DisableUpdateFieldsOnOpen(docxPath, commandOptions),
+    "normalize-figure-indent" => NormalizeFigureIndent(docxPath, commandOptions),
+    "apply-table-design-style" => ApplyTableDesignStyle(docxPath, commandOptions),
+    "replace-table" => ReplaceTable(docxPath, commandOptions),
+    "replace-figures-from-plan" => ReplaceFiguresFromPlan(docxPath, commandOptions),
+    "replace-formulas-with-linear-equations" => ReplaceFormulasWithLinearOfficeMath(docxPath, commandOptions),
+    "replace-formulas-with-mathml-omml" => ReplaceFormulasWithMathMlOfficeMath(docxPath, commandOptions),
+    "convert-text-formulas-to-omath" => ConvertTextFormulasToOfficeMath(docxPath, commandOptions),
+    "repair-article-abnt-layout" => RepairArticleAbntLayout(docxPath, commandOptions),
+    "format-abnt-reference-titles" => FormatAbntReferenceTitles(docxPath, commandOptions),
+    "repair-validation" => RepairValidation(docxPath, commandOptions),
+    "apply-crossrefs" => ApplyCrossrefs(docxPath, commandOptions),
+    "add-bookmarks" => AddBookmarks(docxPath, commandOptions),
+    "rewrite-ref-fields" => RewriteRefFields(docxPath, commandOptions),
+    "repair-style-captions" => RepairStyleCaptions(docxPath, commandOptions),
+    "repair-layout-pendencies" => RepairLayoutPendencies(docxPath, commandOptions),
+    "repair-ref-number-only" => RepairRefNumberOnly(docxPath, commandOptions),
+    "insert-figures" => InsertFigures(docxPath, commandOptions),
+    "insert-comments" => InsertComments(docxPath, commandOptions),
+    "reanchor-comments" => ReanchorComments(docxPath, commandOptions),
+    "answer-comments" => AnswerComments(docxPath, commandOptions),
+    "reply-comments" => ReplyComments(docxPath, commandOptions),
+    "remove-comments" => RemoveComments(docxPath, commandOptions),
+    "append-paragraphs" => AppendParagraphs(docxPath, commandOptions),
+    "accept-revisions" => AcceptRevisions(docxPath, commandOptions),
     _ => UnknownCommand(command)
 };
 
@@ -336,6 +386,11 @@ static void PrintUsage()
     Console.WriteLine("""
 Uso:
   docx-utils <comando> <docx> [opcoes]
+  docx-utils create-article <article_spec.json> <output.docx> [author] [--lock <lockfile>] [--template <template.docx>] [--sbpo] [--blind]
+  docx-utils create-docx <output.docx> [--plan <json>]
+  docx-utils validate-plan <comando> --plan <json>
+  docx-utils plan-contracts [comando] [--format markdown|json]
+  docx-utils help | --help | -h | /?   Mostra esta ajuda.
 
 Notas gerais:
   - Comandos que alteram DOCX exigem --lock <lockfile> para escrita exclusiva.
@@ -343,6 +398,25 @@ Notas gerais:
   - Subagents devem passar --author com o nome atribuido ao subagent.
   - Planos JSON devem ser arquivos no formato esperado pelo comando; use --report md para gerar um relatorio auditavel quando disponivel.
   - A listagem externa de autores foi removida; a leitura de autores existe apenas como logica interna do autor automatico.
+  - `create-article` delega ao comportamento exato do binario `ArticleDocxBuilder`.
+  - `create-docx` cria um DOCX vazio quando chamado sem `--plan` e usa um plano JSON quando informado.
+
+Planos de blocos e tabelas:
+  - plan-contracts [comando] [--format markdown|json] expõe os contratos operacionais de planos sem ler a implementacao.
+  - validate-plan <comando> --plan <json> valida o contrato JSON antes de mutar o DOCX.
+  - insert-blocks, replace-blocks e replace-table seguem os contratos publicados em references/plan-contracts.md e references/plan-contracts.json.
+  - replace-blocks remove o intervalo entre `afterPrefix` e `beforePrefix` e insere parágrafos/tabelas declarativamente no lugar.
+  - Veja references/plan-contracts.md e references/plan-contracts.json para os contratos minimos e exemplos JSON completos.
+
+Criação de documentos:
+  - create-article <article_spec.json> <output.docx> [author] [--lock <lockfile>] [--template <template.docx>] [--sbpo] [--blind]
+    Mantém exatamente o comportamento do binário ArticleDocxBuilder.
+    Exemplo: docx-utils create-article artigo.json artigo.docx Ultron
+
+  - create-docx <output.docx> [--plan <json>]
+    Cria um DOCX do zero. Sem --plan, gera um arquivo vazio; com plano, renderiza title, paragraphs, subtitles, sections e references.
+    Exemplo vazio: docx-utils create-docx novo.docx
+    Exemplo com plano: docx-utils create-docx novo.docx --plan documento.json
 
 Inspecao e auditoria:
   paragraphs <docx> [--start N] [--count N] [--contains TEXT] [--all true|false]
@@ -429,7 +503,49 @@ Estilos e formatacao:
 
   replace-table <docx> --plan <json> [--author NAME] --lock <lockfile> [--report md]
     Substitui uma tabela existente preservando propriedades da tabela e estilos das celulas conforme o plano.
+    Seleciona a tabela por ordinal, bloco, texto da primeira celula, ou por prefixos dos paragrafos vizinhos.
+    Exemplo minimo de JSON:
+      {
+        "tables": [
+          {
+            "id": "tabela-1",
+            "ordinal": 2,
+            "rows": [["Novo A1", "Novo A2"], ["Novo B1", "Novo B2"]]
+          }
+        ]
+      }
     Exemplo: docx-utils replace-table tese.docx --plan tabela.json --lock tese.lock --report tabela.md
+
+  replace-blocks <docx> --plan <json> [--author NAME] --lock <lockfile> [--report md]
+    Substitui o intervalo de blocos entre `afterPrefix` e `beforePrefix` e insere os blocos declarados no lugar.
+    A skill cria as linhas, celulas e tabelas OpenXML; nao monte `w:tr`/`w:tc` manualmente em PowerShell.
+    Exemplo de substituicao por tabela:
+      {
+        "blocks": [
+          {
+            "id": "intervalo-1",
+            "afterPrefix": "Introducao",
+            "beforePrefix": "Conclusao",
+            "items": [
+              {
+                "kind": "table",
+                "tableStyleId": "tabelauerj",
+                "cellStyleId": "dados",
+                "rows": [["A1", "A2"], ["B1", "B2"]]
+              }
+            ]
+          }
+        ]
+      }
+    Exemplo: docx-utils replace-blocks tese.docx --plan blocos.json --lock tese.lock --report blocos.md
+
+  validate-plan <comando> --plan <json>
+    Valida o contrato JSON de `insert-blocks`, `replace-blocks` ou `replace-table` sem mutar o DOCX.
+    Exemplo: docx-utils validate-plan insert-blocks --plan blocos.json
+
+  plan-contracts [comando] [--format markdown|json]
+    Retorna os contratos operacionais em Markdown ou JSON, com fonte em references/plan-contracts.json.
+    Exemplo: docx-utils plan-contracts replace-table --format json
 
   enable-update-fields-on-open <docx> [--author NAME] --lock <lockfile> [--report md]
     Configura o Word para atualizar campos ao abrir.
@@ -445,7 +561,28 @@ Edicao com revisoes rastreadas:
     Exemplo: docx-utils insert-tracked tese.docx --plan insercoes.json --lock tese.lock --report insercoes.md
 
   insert-blocks <docx> --plan <json> [--author NAME] --lock <lockfile> [--report md]
-    Insere blocos de paragrafo/tabela com revisoes, evitando duplicatas por uniqueText.
+    Insere blocos de paragrafo/tabela com revisoes entre afterPrefix e beforePrefix.
+    BlockSpec aceita id, afterPrefix, beforePrefix, uniqueText, styleSource e items[].
+    BlockItemSpec usa kind=paragraph com text/styleId, ou kind=table com rows/tableStyleId/cellStyleId.
+    Exemplo minimo de JSON:
+      {
+        "blocks": [
+          {
+            "id": "bloco-1",
+            "afterPrefix": "Texto antes",
+            "beforePrefix": "Texto depois",
+            "items": [
+              { "kind": "paragraph", "text": "Paragrafo inserido", "styleId": "CorpoTexto" },
+              {
+                "kind": "table",
+                "tableStyleId": "tabelauerj",
+                "cellStyleId": "dados",
+                "rows": [["A1", "A2"], ["B1", "B2"]]
+              }
+            ]
+          }
+        ]
+      }
     Exemplo: docx-utils insert-blocks tese.docx --plan blocos.json --lock tese.lock --report blocos.md
 
   append-paragraphs <docx> --plan <json> [--author NAME] --lock <lockfile> [--report md]
@@ -1883,6 +2020,20 @@ static int InsertTracked(string docxPath, IReadOnlyDictionary<string, string> op
 
 static int InsertBlocks(string docxPath, IReadOnlyDictionary<string, string> options)
 {
+    return ApplyBlockMutationPlan(docxPath, options, "insert-blocks", replaceBetweenAnchors: false);
+}
+
+static int ReplaceBlocks(string docxPath, IReadOnlyDictionary<string, string> options)
+{
+    return ApplyBlockMutationPlan(docxPath, options, "replace-blocks", replaceBetweenAnchors: true);
+}
+
+static int ApplyBlockMutationPlan(
+    string docxPath,
+    IReadOnlyDictionary<string, string> options,
+    string commandName,
+    bool replaceBetweenAnchors)
+{
     var author = ResolveMutationAuthor(docxPath, options);
     if (!options.TryGetValue("plan", out var planPathValue))
     {
@@ -1904,7 +2055,15 @@ static int InsertBlocks(string docxPath, IReadOnlyDictionary<string, string> opt
         return 5;
     }
 
-    var plan = JsonSerializer.Deserialize<BlockInsertionPlan>(File.ReadAllText(planPath), new JsonSerializerOptions
+    var planJson = File.ReadAllText(planPath, Encoding.UTF8);
+    var validation = PlanContractSupport.ValidateInsertBlocksPlan(planJson);
+    if (!validation.IsValid)
+    {
+        PrintPlanValidationErrors(validation.Errors);
+        return 6;
+    }
+
+    var plan = JsonSerializer.Deserialize<BlockInsertionPlan>(planJson, new JsonSerializerOptions
     {
         PropertyNameCaseInsensitive = true
     });
@@ -1922,7 +2081,7 @@ static int InsertBlocks(string docxPath, IReadOnlyDictionary<string, string> opt
 
     using var lockStream = new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
     lockStream.SetLength(0);
-    lockStream.Write(Encoding.UTF8.GetBytes($"docx-utils insert-blocks {DateTime.UtcNow:O}\n"));
+    lockStream.Write(Encoding.UTF8.GetBytes($"docx-utils {commandName} {DateTime.UtcNow:O}\n"));
     lockStream.Flush();
 
     using var doc = WordprocessingDocument.Open(docxPath, true);
@@ -1933,13 +2092,13 @@ static int InsertBlocks(string docxPath, IReadOnlyDictionary<string, string> opt
     {
         var paragraphs = GetParagraphs(doc);
         var presenceParagraphs = GetAllParagraphEntries(doc);
-        if (!string.IsNullOrWhiteSpace(spec.UniqueText) && ContentAlreadyPresent(presenceParagraphs, spec.UniqueText))
+        if (!replaceBetweenAnchors && !string.IsNullOrWhiteSpace(spec.UniqueText) && ContentAlreadyPresent(presenceParagraphs, spec.UniqueText))
         {
             skipped.Add($"{spec.Id}: unique text already present");
             continue;
         }
 
-        if (BlockTableAlreadyPresent(doc, spec))
+        if (!replaceBetweenAnchors && BlockTableAlreadyPresent(doc, spec))
         {
             skipped.Add($"{spec.Id}: equivalent table already present");
             continue;
@@ -1957,12 +2116,17 @@ static int InsertBlocks(string docxPath, IReadOnlyDictionary<string, string> opt
             ? before.Paragraph
             : after.Paragraph;
 
+        if (replaceBetweenAnchors)
+        {
+            RemoveElementsBetweenAnchors(after.Paragraph, before.Paragraph);
+        }
+
         OpenXmlElement insertionPoint = after.Paragraph;
         foreach (var item in spec.Items)
         {
             OpenXmlElement block = item.Kind.Equals("table", StringComparison.OrdinalIgnoreCase)
                 ? CreateTrackedTable(item, metadata)
-                : CreateInsertedParagraphWithStyle(template, item.Text ?? "", item.StyleId, metadata);
+                : CreateInsertedParagraphWithStyle(template, item.Text ?? item.Latex ?? "", item.StyleId, metadata);
             insertionPoint.InsertAfterSelf(block);
             insertionPoint = block;
         }
@@ -1976,7 +2140,7 @@ static int InsertBlocks(string docxPath, IReadOnlyDictionary<string, string> opt
         var reportPath = Path.GetFullPath(reportPathValue);
         Directory.CreateDirectory(Path.GetDirectoryName(reportPath) ?? ".");
         var builder = new StringBuilder();
-        builder.AppendLine("# Insert Blocks Report");
+        builder.AppendLine(replaceBetweenAnchors ? "# Replace Blocks Report" : "# Insert Blocks Report");
         builder.AppendLine();
         builder.AppendLine($"- DOCX: `{docxPath}`");
         builder.AppendLine($"- Plano: `{planPath}`");
@@ -3913,33 +4077,15 @@ static int ReplaceTable(string docxPath, IReadOnlyDictionary<string, string> opt
     var reportPath = options.TryGetValue("report", out var reportPathValue) && !string.IsNullOrWhiteSpace(reportPathValue)
         ? Path.GetFullPath(reportPathValue)
         : null;
-    var plan = JsonSerializer.Deserialize<ReplaceTablePlan>(File.ReadAllText(planPath, Encoding.UTF8), JsonOptions()) ?? new ReplaceTablePlan();
-    if (plan.Tables.Count == 0)
+    var planJson = File.ReadAllText(planPath, Encoding.UTF8);
+    var validation = PlanContractSupport.ValidateReplaceTablePlan(planJson);
+    if (!validation.IsValid)
     {
-        Console.Error.WriteLine("Unable to read replace-table plan or `tables` is empty.");
+        PrintPlanValidationErrors(validation.Errors);
         return 6;
     }
 
-    foreach (var spec in plan.Tables)
-    {
-        if (!HasTableSelector(spec))
-        {
-            Console.Error.WriteLine($"Plan item `{spec.Id}` must define a selector using `ordinal`, `block`, `firstCellText`, `previousParagraphPrefix`, or `nextParagraphPrefix`.");
-            return 4;
-        }
-
-        if (spec.Rows is null || spec.Rows.Count == 0)
-        {
-            Console.Error.WriteLine($"Plan item `{spec.Id}` must include at least one row in `rows`.");
-            return 4;
-        }
-
-        if (spec.Rows.Select(row => row?.Count ?? 0).DefaultIfEmpty(0).Max() == 0)
-        {
-            Console.Error.WriteLine($"Plan item `{spec.Id}` must include at least one cell across the replacement rows.");
-            return 4;
-        }
-    }
+    var plan = JsonSerializer.Deserialize<ReplaceTablePlan>(planJson, JsonOptions()) ?? new ReplaceTablePlan();
 
     var lockDirectory = Path.GetDirectoryName(lockPath) ?? ".";
     Directory.CreateDirectory(lockDirectory);
@@ -3978,6 +4124,62 @@ static int ReplaceTable(string docxPath, IReadOnlyDictionary<string, string> opt
     foreach (var item in applied) Console.WriteLine($"APPLY {item}");
     foreach (var item in skipped) Console.WriteLine($"SKIP {item}");
     return skipped.Count == 0 ? 0 : 9;
+}
+
+static int ValidatePlan(string targetCommand, IReadOnlyDictionary<string, string> options)
+{
+    if (!options.TryGetValue("plan", out var planPathValue) || string.IsNullOrWhiteSpace(planPathValue))
+    {
+        Console.Error.WriteLine("--plan is required");
+        return 4;
+    }
+
+    var planPath = Path.GetFullPath(planPathValue);
+    if (!File.Exists(planPath))
+    {
+        Console.Error.WriteLine($"Plan not found: {planPath}");
+        return 5;
+    }
+
+    var planJson = File.ReadAllText(planPath, Encoding.UTF8);
+    PlanValidationResult validation = targetCommand switch
+    {
+        "create-docx" => PlanContractSupport.ValidateCreateDocxPlan(planJson),
+        "insert-blocks" => PlanContractSupport.ValidateInsertBlocksPlan(planJson),
+        "replace-blocks" => PlanContractSupport.ValidateInsertBlocksPlan(planJson),
+        "replace-table" => PlanContractSupport.ValidateReplaceTablePlan(planJson),
+        _ => new PlanValidationResult(false, [$"Unsupported plan target for validate-plan: `{targetCommand}`. Use `create-docx`, `insert-blocks`, `replace-blocks` or `replace-table`."])
+    };
+
+    if (!validation.IsValid)
+    {
+        PrintPlanValidationErrors(validation.Errors);
+        return 6;
+    }
+
+    Console.WriteLine($"Plan valid for {targetCommand}: {planPath}");
+    return 0;
+}
+
+static int CreateDocxCommand(string[] args)
+{
+    if (args.Length < 1)
+    {
+        PrintUsage();
+        return 1;
+    }
+
+    var outputPath = Path.GetFullPath(args[0]);
+    var options = ParseOptions(args.Skip(1).ToArray());
+    return CreateDocxSupport.CreateDocx(outputPath, options);
+}
+
+static void PrintPlanValidationErrors(IReadOnlyList<string> errors)
+{
+    foreach (var error in errors)
+    {
+        Console.Error.WriteLine(error);
+    }
 }
 
 static int ReplaceFiguresFromPlan(string docxPath, IReadOnlyDictionary<string, string> options)
@@ -8069,6 +8271,26 @@ static List<ParagraphEntry> GetAllParagraphEntries(WordprocessingDocument doc)
         .Select((p, index) => new ParagraphEntry(p, index, ParagraphText(p)))
         .Where(p => !string.IsNullOrWhiteSpace(p.Text))
         .ToList();
+}
+
+static int RemoveElementsBetweenAnchors(OpenXmlElement start, OpenXmlElement end)
+{
+    if (!ReferenceEquals(start.Parent, end.Parent))
+    {
+        throw new InvalidOperationException("Anchor paragraphs must share the same parent.");
+    }
+
+    var removed = 0;
+    var current = start.NextSibling();
+    while (current is not null && !ReferenceEquals(current, end))
+    {
+        var next = current.NextSibling();
+        current.Remove();
+        removed++;
+        current = next;
+    }
+
+    return removed;
 }
 
 static ParagraphEntry FindUniqueParagraph(IEnumerable<ParagraphEntry> paragraphs, string prefix, string label)

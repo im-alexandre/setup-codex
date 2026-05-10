@@ -1,0 +1,94 @@
+{
+  "commands": [
+    {
+      "name": "create-docx",
+      "summary": "Cria um DOCX do zero, vazio ou a partir de um plano JSON.",
+      "requiredOptions": [],
+      "planShape": "CreateDocxPlan -> title + paragraphs[] -> subtitles[] -> sections[]",
+      "rules": [
+        "Quando um plano for fornecido, a raiz deve ser um objeto JSON.",
+        "`title` e `paragraphs` sao obrigatorios no plano com conteudo.",
+        "`paragraphs` deve conter ao menos um paragrafo nao vazio.",
+        "`subtitles`, `sections` e `references` sao opcionais.",
+        "`sections`, quando presente, e uma lista de objetos com `heading`, `level` e `paragraphs`."
+      ],
+      "examples": [
+        "docx-utils create-docx novo.docx",
+        "docx-utils create-docx tese.docx --plan documento.json",
+        "docx-utils validate-plan create-docx --plan documento.json",
+        "docx-utils plan-contracts create-docx --format markdown",
+        "docx-utils plan-contracts create-docx --format json"
+      ]
+    },
+    {
+      "name": "insert-blocks",
+      "summary": "Valida e insere blocos rastreados entre `afterPrefix` e `beforePrefix`.",
+      "requiredOptions": [
+        "--plan",
+        "--lock"
+      ],
+      "planShape": "BlockInsertionPlan -> blocks[] -> BlockSpec -> items[] -> BlockItemSpec",
+      "rules": [
+        "A raiz deve ser um objeto com `blocks`.",
+        "`blocks` nao pode estar vazio.",
+        "Cada bloco precisa de `id`, `afterPrefix`, `beforePrefix` e `items`.",
+        "`styleSource`, quando presente, deve ser `after` ou `before`.",
+        "Cada item precisa de `kind` valido (`paragraph` ou `table`).",
+        "Itens `paragraph` precisam de `text` ou `latex`.",
+        "Itens `table` precisam de `rows` com ao menos uma linha e uma celula por linha."
+      ],
+      "examples": [
+        "docx-utils validate-plan insert-blocks --plan blocos.json",
+        "docx-utils plan-contracts insert-blocks --format markdown",
+        "docx-utils plan-contracts insert-blocks --format json"
+      ]
+    },
+    {
+      "name": "replace-blocks",
+      "summary": "Remove o intervalo entre `afterPrefix` e `beforePrefix` e insere os blocos declarados no lugar.",
+      "requiredOptions": [
+        "--plan",
+        "--lock"
+      ],
+      "planShape": "BlockInsertionPlan -> blocks[] -> BlockSpec -> items[] -> BlockItemSpec",
+      "rules": [
+        "A raiz deve ser um objeto com `blocks`.",
+        "`blocks` nao pode estar vazio.",
+        "Cada bloco precisa de `id`, `afterPrefix`, `beforePrefix` e `items`.",
+        "`styleSource`, quando presente, deve ser `after` ou `before`.",
+        "Cada item precisa de `kind` valido (`paragraph` ou `table`).",
+        "Itens `paragraph` precisam de `text` ou `latex`.",
+        "Itens `table` precisam de `rows` com ao menos uma linha e uma celula por linha.",
+        "O comando remove o conteudo existente entre os dois marcadores antes de inserir os novos blocos."
+      ],
+      "examples": [
+        "docx-utils validate-plan replace-blocks --plan blocos.json",
+        "docx-utils plan-contracts replace-blocks --format markdown",
+        "docx-utils plan-contracts replace-blocks --format json"
+      ]
+    },
+    {
+      "name": "replace-table",
+      "summary": "Valida e substitui uma tabela existente preservando o estilo selecionado.",
+      "requiredOptions": [
+        "--plan",
+        "--lock"
+      ],
+      "planShape": "ReplaceTablePlan -> tables[] -> ReplaceTableSpec -> rows[][]",
+      "rules": [
+        "A raiz deve ser um objeto com `tables`.",
+        "`tables` nao pode estar vazio.",
+        "Cada item precisa de `id`.",
+        "Pelo menos um seletor precisa estar presente: `ordinal`, `block`, `blockIndex`, `firstCellText`, `previousParagraphPrefix` ou `nextParagraphPrefix`.",
+        "`ordinal`, `block` e `blockIndex`, quando presentes, devem ser inteiros positivos.",
+        "`rows` e obrigatorio e nao pode estar vazio.",
+        "Cada linha em `rows` precisa conter ao menos uma celula."
+      ],
+      "examples": [
+        "docx-utils validate-plan replace-table --plan tabela.json",
+        "docx-utils plan-contracts replace-table --format markdown",
+        "docx-utils plan-contracts replace-table --format json"
+      ]
+    }
+  ]
+}

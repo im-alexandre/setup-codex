@@ -68,6 +68,19 @@ exports/
 **/db/
 **/logs/
 
+# Binários e artefatos de build/publicação
+*.exe
+*.dll
+*.pdb
+*.so
+*.dylib
+*.a
+*.lib
+*.nupkg
+*.snupkg
+*.deps.json
+*.runtimeconfig.json
+
 *.pyc
 *.pyo
 *.pyd

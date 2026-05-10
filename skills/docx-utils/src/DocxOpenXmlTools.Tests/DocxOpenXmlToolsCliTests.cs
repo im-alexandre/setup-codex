@@ -48,6 +48,233 @@ public sealed class DocxOpenXmlToolsCliTests
         Assert.Contains("OpenXmlValidationErrorsActionable: 0", validateResult.CombinedOutput);
     }
 
+    [Fact]
+    public async Task Help_and_dashdashhelp_emit_the_same_usage_text_with_plan_examples()
+    {
+        var skillRoot = FindSkillRoot();
+        var toolsProject = Path.Combine(skillRoot, "src", "DocxOpenXmlTools", "DocxOpenXmlTools.csproj");
+
+        var helpResult = await RunProcessAsync("dotnet", $"run --project \"{toolsProject}\" -- help", skillRoot);
+        var dashHelpResult = await RunProcessAsync("dotnet", $"run --project \"{toolsProject}\" -- --help", skillRoot);
+
+        Assert.True(helpResult.ExitCode == 0, helpResult.CombinedOutput);
+        Assert.True(dashHelpResult.ExitCode == 0, dashHelpResult.CombinedOutput);
+        Assert.Equal(helpResult.StandardOutput, dashHelpResult.StandardOutput);
+        Assert.Contains("docx-utils help | --help | -h | /?", helpResult.StandardOutput);
+        Assert.Contains("docx-utils create-article <article_spec.json> <output.docx>", helpResult.StandardOutput);
+        Assert.Contains("docx-utils create-docx <output.docx> [--plan <json>]", helpResult.StandardOutput);
+        Assert.Contains("plan-contracts [comando] [--format markdown|json]", helpResult.StandardOutput);
+        Assert.Contains("validate-plan <comando> --plan <json>", helpResult.StandardOutput);
+        Assert.Contains("replace-blocks <docx> --plan <json>", helpResult.StandardOutput);
+        Assert.Contains("A skill cria as linhas, celulas e tabelas OpenXML", helpResult.StandardOutput);
+        Assert.Contains("Exemplo minimo de JSON:", helpResult.StandardOutput);
+        Assert.Contains("docx-utils insert-blocks tese.docx --plan blocos.json --lock tese.lock --report blocos.md", helpResult.StandardOutput);
+        Assert.Contains("docx-utils replace-blocks tese.docx --plan blocos.json --lock tese.lock --report blocos.md", helpResult.StandardOutput);
+        Assert.Contains("docx-utils replace-table tese.docx --plan tabela.json --lock tese.lock --report tabela.md", helpResult.StandardOutput);
+    }
+
+    [Fact]
+    public async Task Plan_contracts_command_exposes_markdown_and_json_without_docx()
+    {
+        var skillRoot = FindSkillRoot();
+        var toolsProject = Path.Combine(skillRoot, "src", "DocxOpenXmlTools", "DocxOpenXmlTools.csproj");
+
+        var markdownResult = await RunProcessAsync("dotnet", $"run --project \"{toolsProject}\" -- plan-contracts --format markdown", skillRoot);
+        Assert.True(markdownResult.ExitCode == 0, markdownResult.CombinedOutput);
+        Assert.Contains("# Plan Contracts", markdownResult.StandardOutput);
+        Assert.Contains("## `create-docx`", markdownResult.StandardOutput);
+        Assert.Contains("## `insert-blocks`", markdownResult.StandardOutput);
+        Assert.Contains("Contrato: `CreateDocxPlan -> title + paragraphs[] -> subtitles[] -> sections[]`", markdownResult.StandardOutput);
+        Assert.Contains("## `insert-blocks`", markdownResult.StandardOutput);
+        Assert.Contains("Contrato: `BlockInsertionPlan -> blocks[] -> BlockSpec -> items[] -> BlockItemSpec`", markdownResult.StandardOutput);
+
+        var replaceBlocksMarkdown = await RunProcessAsync("dotnet", $"run --project \"{toolsProject}\" -- plan-contracts replace-blocks --format markdown", skillRoot);
+        Assert.True(replaceBlocksMarkdown.ExitCode == 0, replaceBlocksMarkdown.CombinedOutput);
+        Assert.Contains("## `replace-blocks`", replaceBlocksMarkdown.StandardOutput);
+        Assert.Contains("Remove o intervalo entre `afterPrefix` e `beforePrefix`", replaceBlocksMarkdown.StandardOutput);
+
+        var jsonResult = await RunProcessAsync("dotnet", $"run --project \"{toolsProject}\" -- plan-contracts create-docx --format json", skillRoot);
+        Assert.True(jsonResult.ExitCode == 0, jsonResult.CombinedOutput);
+        using var json = JsonDocument.Parse(jsonResult.StandardOutput);
+        Assert.Equal("create-docx", json.RootElement.GetProperty("name").GetString());
+        Assert.Contains("CreateDocxPlan -> title + paragraphs[] -> subtitles[] -> sections[]", json.RootElement.GetProperty("planShape").GetString());
+    }
+
+    [Theory]
+    [InlineData("create-docx", """
+        {
+          "title": "Titulo",
+          "paragraphs": []
+        }
+        """, "must contain at least one paragraph")]
+    [InlineData("insert-blocks", """
+        {
+          "blocks": [
+            {
+              "id": "bloco-1",
+              "afterPrefix": "Antes",
+              "beforePrefix": "Depois",
+              "items": [
+                {
+                  "kind": "image"
+                }
+              ]
+            }
+          ]
+        }
+        """, "must be `paragraph` or `table`")]
+    [InlineData("insert-blocks", """
+        {
+          "blocks": [
+            {
+              "id": "bloco-1",
+              "afterPrefix": "Antes",
+              "beforePrefix": "Depois",
+              "items": [
+                {
+                  "kind": "paragraph"
+                }
+              ]
+            }
+          ]
+        }
+        """, "must include `text` or `latex`")]
+    [InlineData("replace-table", """
+        {
+          "tables": [
+            {
+              "id": "tabela-1",
+              "rows": [["A1", "A2"]]
+            }
+          ]
+        }
+        """, "must define at least one selector")]
+    [InlineData("replace-table", """
+        {
+          "tables": [
+            {
+              "id": "tabela-1",
+              "ordinal": 1,
+              "rows": []
+            }
+          ]
+        }
+        """, "must contain at least one row")]
+    [InlineData("replace-blocks", """
+        {
+          "blocks": [
+            {
+              "id": "bloco-1",
+              "afterPrefix": "Antes",
+              "beforePrefix": "Depois",
+              "items": [
+                {
+                  "kind": "table",
+                  "rows": []
+                }
+              ]
+            }
+          ]
+        }
+        """, "must contain at least one row")]
+    public async Task Validate_plan_reports_actionable_errors_for_invalid_contracts(string command, string planJson, string expectedMessage)
+    {
+        var skillRoot = FindSkillRoot();
+        var toolsProject = Path.Combine(skillRoot, "src", "DocxOpenXmlTools", "DocxOpenXmlTools.csproj");
+
+        using var tempDir = new TempDirectory();
+        var planPath = Path.Combine(tempDir.Path, $"{command}.json");
+        await File.WriteAllTextAsync(planPath, planJson);
+
+        var result = await RunProcessAsync("dotnet", $"run --project \"{toolsProject}\" -- validate-plan {command} --plan \"{planPath}\"", skillRoot);
+
+        Assert.Equal(6, result.ExitCode);
+        Assert.Contains(expectedMessage, result.CombinedOutput);
+    }
+
+    [Fact]
+    public async Task Validate_plan_accepts_minimal_supported_contracts()
+    {
+        var skillRoot = FindSkillRoot();
+        var toolsProject = Path.Combine(skillRoot, "src", "DocxOpenXmlTools", "DocxOpenXmlTools.csproj");
+
+        using var tempDir = new TempDirectory();
+        var insertPlanPath = Path.Combine(tempDir.Path, "insert-blocks.json");
+        var replacePlanPath = Path.Combine(tempDir.Path, "replace-table.json");
+
+        await File.WriteAllTextAsync(insertPlanPath, """
+        {
+          "blocks": [
+            {
+              "id": "bloco-1",
+              "afterPrefix": "Antes",
+              "beforePrefix": "Depois",
+              "items": [
+                {
+                  "kind": "paragraph",
+                  "text": "Texto inserido"
+                }
+              ]
+            }
+          ]
+        }
+        """);
+
+        await File.WriteAllTextAsync(replacePlanPath, """
+        {
+          "tables": [
+            {
+              "id": "tabela-1",
+              "ordinal": 1,
+              "rows": [
+                ["A1", "A2"]
+              ]
+            }
+          ]
+        }
+        """);
+        await File.WriteAllTextAsync(tempDir.Path + "\\create-docx.json", """
+        {
+          "title": "Titulo do documento",
+          "paragraphs": [
+            "Paragrafo 1",
+            "Paragrafo 2"
+          ],
+          "subtitles": [
+            "Subtitulo opcional"
+          ],
+          "sections": [
+            {
+              "heading": "Secao 1",
+              "level": 1,
+              "paragraphs": [
+                "Texto da secao"
+              ]
+            }
+          ],
+          "references": [
+            "Referencia 1"
+          ]
+        }
+        """);
+
+        var insertResult = await RunProcessAsync("dotnet", $"run --project \"{toolsProject}\" -- validate-plan insert-blocks --plan \"{insertPlanPath}\"", skillRoot);
+        Assert.True(insertResult.ExitCode == 0, insertResult.CombinedOutput);
+        Assert.Contains("Plan valid for insert-blocks", insertResult.StandardOutput);
+
+        var replaceBlocksResult = await RunProcessAsync("dotnet", $"run --project \"{toolsProject}\" -- validate-plan replace-blocks --plan \"{insertPlanPath}\"", skillRoot);
+        Assert.True(replaceBlocksResult.ExitCode == 0, replaceBlocksResult.CombinedOutput);
+        Assert.Contains("Plan valid for replace-blocks", replaceBlocksResult.StandardOutput);
+
+        var replaceResult = await RunProcessAsync("dotnet", $"run --project \"{toolsProject}\" -- validate-plan replace-table --plan \"{replacePlanPath}\"", skillRoot);
+        Assert.True(replaceResult.ExitCode == 0, replaceResult.CombinedOutput);
+        Assert.Contains("Plan valid for replace-table", replaceResult.StandardOutput);
+
+        var createDocxResult = await RunProcessAsync("dotnet", $"run --project \"{toolsProject}\" -- validate-plan create-docx --plan \"{Path.Combine(tempDir.Path, "create-docx.json")}\"", skillRoot);
+        Assert.True(createDocxResult.ExitCode == 0, createDocxResult.CombinedOutput);
+        Assert.Contains("Plan valid for create-docx", createDocxResult.StandardOutput);
+    }
+
     [Theory]
     [InlineData(new string[] { }, "Ultron")]
     [InlineData(new[] { "Ultron" }, "Brainiac")]
@@ -292,6 +519,197 @@ public sealed class DocxOpenXmlToolsCliTests
         }
     }
 
+    [Fact]
+    public async Task ReplaceBlocks_between_anchors_removes_old_content_and_inserts_table()
+    {
+        var skillRoot = FindSkillRoot();
+        var toolsProject = Path.Combine(skillRoot, "src", "DocxOpenXmlTools", "DocxOpenXmlTools.csproj");
+
+        using var tempDir = new TempDirectory();
+        var docxPath = Path.Combine(tempDir.Path, "blocks.docx");
+        var planPath = Path.Combine(tempDir.Path, "replace-blocks.json");
+        var lockPath = Path.Combine(tempDir.Path, "replace-blocks.lock");
+        var reportPath = Path.Combine(tempDir.Path, "replace-blocks.md");
+
+        CreateDocxForBlockReplacement(docxPath);
+        await File.WriteAllTextAsync(planPath, """
+        {
+          "blocks": [
+            {
+              "id": "intervalo-1",
+              "afterPrefix": "Abertura do intervalo.",
+              "beforePrefix": "Fechamento do intervalo.",
+              "items": [
+                {
+                  "kind": "paragraph",
+                  "text": "Texto novo entre as ancoras",
+                  "styleId": "CorpoTexto"
+                },
+                {
+                  "kind": "table",
+                  "tableStyleId": "tabelauerj",
+                  "cellStyleId": "dados",
+                  "rows": [
+                    ["A1", "A2"],
+                    ["B1", "B2"]
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+        """);
+
+        var result = await RunProcessAsync(
+            "dotnet",
+            $"run --project \"{toolsProject}\" -- replace-blocks \"{docxPath}\" --plan \"{planPath}\" --lock \"{lockPath}\" --report \"{reportPath}\"",
+            skillRoot);
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("APPLY intervalo-1", result.StandardOutput);
+        Assert.True(File.Exists(reportPath), "O relatorio de replace-blocks nao foi criado.");
+        Assert.Contains("Replace Blocks Report", await File.ReadAllTextAsync(reportPath));
+
+        using var document = WordprocessingDocument.Open(docxPath, false);
+        var body = document.MainDocumentPart!.Document.Body!;
+        var texts = body.Descendants<Text>().Select(t => t.Text).ToList();
+
+        Assert.Contains("Abertura do intervalo.", texts);
+        Assert.Contains("Fechamento do intervalo.", texts);
+        Assert.Contains("Texto novo entre as ancoras", texts);
+        Assert.DoesNotContain("Paragrafo intermediario 1", texts);
+        Assert.DoesNotContain("Paragrafo intermediario 2", texts);
+
+        var tables = body.Elements<Table>().ToList();
+        Assert.Single(tables);
+        var rows = tables[0].Elements<TableRow>().ToList();
+        Assert.Equal(2, rows.Count);
+        Assert.Equal("A1", GetCellText(rows[0], 0));
+        Assert.Equal("B2", GetCellText(rows[1], 1));
+    }
+
+    [Fact]
+    public async Task Create_article_command_matches_article_builder_behavior()
+    {
+        var skillRoot = FindSkillRoot();
+        var toolsProject = Path.Combine(skillRoot, "src", "DocxOpenXmlTools", "DocxOpenXmlTools.csproj");
+        var articleProject = Path.Combine(skillRoot, "src", "ArticleDocxBuilder", "ArticleDocxBuilder.csproj");
+
+        using var tempDir = new TempDirectory();
+        var specPath = Path.Combine(tempDir.Path, "article_spec.json");
+        var articleOut = Path.Combine(tempDir.Path, "article-direct.docx");
+        var integratedOut = Path.Combine(tempDir.Path, "article-integrated.docx");
+
+        await File.WriteAllTextAsync(specPath, """
+        {
+          "title": "Titulo integrado",
+          "subtitle": "Subtitulo integrado",
+          "authorLine": "Ultron",
+          "resumo": "Resumo minimo.",
+          "abstract": "Abstract minimo.",
+          "palavrasChave": ["integracao"],
+          "keywords": ["integration"],
+          "sections": [
+            {
+              "heading": "Introducao",
+              "level": 1,
+              "paragraphs": ["Paragrafo de integracao."],
+              "items": []
+            }
+          ],
+          "references": ["Referencia X"]
+        }
+        """);
+
+        var direct = await RunProcessAsync("dotnet", $"run --project \"{articleProject}\" -- \"{specPath}\" \"{articleOut}\" Ultron", skillRoot);
+        var integrated = await RunProcessAsync("dotnet", $"run --project \"{toolsProject}\" -- create-article \"{specPath}\" \"{integratedOut}\" Ultron", skillRoot);
+
+        Assert.True(direct.ExitCode == 0, direct.CombinedOutput);
+        Assert.True(integrated.ExitCode == 0, integrated.CombinedOutput);
+
+        using var directJson = JsonDocument.Parse(direct.StandardOutput);
+        using var integratedJson = JsonDocument.Parse(integrated.StandardOutput);
+        Assert.Equal(
+            directJson.RootElement.GetProperty("validation_errors").GetInt32(),
+            integratedJson.RootElement.GetProperty("validation_errors").GetInt32());
+        Assert.Equal(
+            directJson.RootElement.GetProperty("first_errors").GetArrayLength(),
+            integratedJson.RootElement.GetProperty("first_errors").GetArrayLength());
+
+        using var directDoc = WordprocessingDocument.Open(articleOut, false);
+        using var integratedDoc = WordprocessingDocument.Open(integratedOut, false);
+        Assert.Equal(
+            directDoc.MainDocumentPart!.Document.Body!.Descendants<Text>().Select(t => t.Text).ToList(),
+            integratedDoc.MainDocumentPart!.Document.Body!.Descendants<Text>().Select(t => t.Text).ToList());
+    }
+
+    [Fact]
+    public async Task Create_docx_without_plan_creates_empty_valid_document()
+    {
+        var skillRoot = FindSkillRoot();
+        var toolsProject = Path.Combine(skillRoot, "src", "DocxOpenXmlTools", "DocxOpenXmlTools.csproj");
+
+        using var tempDir = new TempDirectory();
+        var outputPath = Path.Combine(tempDir.Path, "empty.docx");
+
+        var result = await RunProcessAsync("dotnet", $"run --project \"{toolsProject}\" -- create-docx \"{outputPath}\"", skillRoot);
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.True(File.Exists(outputPath));
+        Assert.Contains("\"validation_errors\": 0", result.StandardOutput);
+    }
+
+    [Fact]
+    public async Task Create_docx_with_plan_renders_title_paragraphs_and_sections()
+    {
+        var skillRoot = FindSkillRoot();
+        var toolsProject = Path.Combine(skillRoot, "src", "DocxOpenXmlTools", "DocxOpenXmlTools.csproj");
+
+        using var tempDir = new TempDirectory();
+        var planPath = Path.Combine(tempDir.Path, "create-docx.json");
+        var outputPath = Path.Combine(tempDir.Path, "plan.docx");
+
+        await File.WriteAllTextAsync(planPath, """
+        {
+          "title": "Documento Novo",
+          "paragraphs": [
+            "Primeiro paragrafo.",
+            "Segundo paragrafo."
+          ],
+          "subtitles": [
+            "Subtitulo opcional"
+          ],
+          "sections": [
+            {
+              "heading": "Secao 1",
+              "level": 1,
+              "paragraphs": [
+                "Texto da secao."
+              ]
+            }
+          ],
+          "references": [
+            "Referencia 1"
+          ]
+        }
+        """);
+
+        var result = await RunProcessAsync("dotnet", $"run --project \"{toolsProject}\" -- create-docx \"{outputPath}\" --plan \"{planPath}\"", skillRoot);
+
+        Assert.True(result.ExitCode == 0, result.CombinedOutput);
+        Assert.Contains("\"validation_errors\": 0", result.StandardOutput);
+
+        using var document = WordprocessingDocument.Open(outputPath, false);
+        var texts = document.MainDocumentPart!.Document.Body!.Descendants<Text>().Select(t => t.Text).ToList();
+        Assert.Contains("Documento Novo", texts);
+        Assert.Contains("Subtitulo opcional", texts);
+        Assert.Contains("Primeiro paragrafo.", texts);
+        Assert.Contains("Segundo paragrafo.", texts);
+        Assert.Contains("Secao 1", texts);
+        Assert.Contains("Texto da secao.", texts);
+        Assert.Contains("Referencia 1", texts);
+    }
+
     private static string FindSkillRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -438,6 +856,21 @@ public sealed class DocxOpenXmlToolsCliTests
                 ["Tabela 2 - Celula B1", "Tabela 2 - Celula B2"]
             ]));
         body.Append(new Paragraph(new Run(new Text("Depois da segunda tabela."))));
+
+        mainPart.Document.Save();
+    }
+
+    private static void CreateDocxForBlockReplacement(string docxPath)
+    {
+        using var document = WordprocessingDocument.Create(docxPath, WordprocessingDocumentType.Document);
+        var mainPart = document.AddMainDocumentPart();
+        mainPart.Document = new Document(new Body());
+
+        var body = mainPart.Document.Body!;
+        body.Append(new Paragraph(new Run(new Text("Abertura do intervalo."))));
+        body.Append(new Paragraph(new Run(new Text("Paragrafo intermediario 1"))));
+        body.Append(new Paragraph(new Run(new Text("Paragrafo intermediario 2"))));
+        body.Append(new Paragraph(new Run(new Text("Fechamento do intervalo."))));
 
         mainPart.Document.Save();
     }

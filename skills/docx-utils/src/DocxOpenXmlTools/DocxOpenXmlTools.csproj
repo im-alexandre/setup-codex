@@ -16,6 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ArticleDocxBuilder\ArticleDocxBuilder.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="CanonicalStyles\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

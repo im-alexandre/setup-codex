@@ -1,6 +1,6 @@
 ---
 name: docx-utils
-description: Instala e valida utilitários .NET/Open XML para inspeção, edição auditável e exportação de estilos de DOCX.
+description: Automatiza inspeção, validação, criação e edições auditáveis em arquivos DOCX com .NET/Open XML, incluindo revisões rastreadas, comentários, tabelas, figuras, equações e estilos canônicos.
 ---
 
 # Docx Utils
@@ -46,6 +46,22 @@ Use esta skill quando precisar trabalhar com utilitários .NET para inspeção, 
 - `bin/docx-utils/docx-utils.exe` ou `bin/docx-utils/docx-utils`: binário publicado preferencial para execução operacional.
 - `scripts/detect-codex-surface.ps1` / `scripts/detect-codex-surface.sh`: detecta se a sessão atual parece `cli` ou `app`.
 - `BACKLOG.md`: registro de lacunas de comandos/recursos para implementação futura.
+- `references/plan-contracts.md`: contratos minimos e exemplos JSON para `create-docx`, `insert-blocks`, `replace-blocks` e `replace-table`.
+- `references/plan-contracts.json`: fonte machine-readable dos contratos operacionais.
+
+## Planos de blocos e tabelas
+
+- `docx-utils plan-contracts [comando] [--format markdown|json]` expõe os contratos operacionais sem depender do código-fonte.
+- `docx-utils validate-plan <comando> --plan <json>` valida o contrato antes de mutar o DOCX.
+- `create-article` delega ao comportamento exato do binario `ArticleDocxBuilder`.
+- `create-docx` cria um DOCX vazio quando chamado sem plano e renderiza um plano JSON quando informado.
+- `create-docx`, `insert-blocks`, `replace-blocks` e `replace-table` devem ser consultados via `plan-contracts`, `references/plan-contracts.md` ou `references/plan-contracts.json`; não dependa de `Program.cs` para descobrir o formato.
+- `insert-blocks` insere blocos entre `afterPrefix` e `beforePrefix` sem remover o conteúdo existente entre eles.
+- `replace-blocks` remove o intervalo entre as âncoras e insere os blocos declarativos no lugar.
+- `create-docx` exige `title` e `paragraphs` quando o plano tem conteúdo; `subtitles`, `sections` e `references` são opcionais.
+- `insert-blocks` e `replace-blocks` exigem `blocks[]`, `afterPrefix`, `beforePrefix`, `items[]`, `kind` valido e `rows` quando o item for tabela.
+- `replace-table` exige `tables[]`, um seletor valido e `rows` nao vazio.
+- Criar linhas, celulas e tabelas OpenXML e responsabilidade da skill; em uso operacional, o Codex deve declarar o plano e nao montar `w:tr`/`w:tc` manualmente.
 
 ## Detecção Codex CLI/App
 
