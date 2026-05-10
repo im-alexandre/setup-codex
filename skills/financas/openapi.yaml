@@ -1,0 +1,1445 @@
+openapi: 3.0.3
+info:
+  title: Finanças API
+  version: 0.2.0
+  description: >
+    API local sem autenticação para controle de despesas, receitas, contas,
+    importação de extratos/faturas, leitura de comprovantes PIX, categorias,
+    deduplicação, conciliação e relatórios. Todos os paths abaixo são relativos
+    ao prefixo `/api`; no Swagger local eles aparecem com o servidor
+    `http://127.0.0.1:8000/api`.
+servers:
+  - url: http://127.0.0.1:8000/api
+tags:
+  - name: Sistema
+  - name: Contas
+  - name: Documentos
+  - name: Lançamentos
+  - name: Categorias
+  - name: Importação
+  - name: Conciliação
+  - name: Relatórios
+paths:
+  /schema/:
+    get:
+      tags: [Sistema]
+      summary: Retorna este contrato OpenAPI em JSON.
+      responses:
+        "200":
+          description: Contrato OpenAPI serializado.
+  /docs/:
+    get:
+      tags: [Sistema]
+      summary: Interface Swagger UI sem autenticação.
+      responses:
+        "200":
+          description: HTML do Swagger UI.
+          content:
+            text/html:
+              schema:
+                type: string
+  /accounts/:
+    get:
+      tags: [Contas]
+      summary: Lista contas bancárias ativas.
+      description: Retorna contas com `ativa=true`, ordenadas por banco e nome.
+      responses:
+        "200":
+          description: Lista de contas.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Account"
+    post:
+      tags: [Contas]
+      summary: Cria uma conta bancária.
+      description: >
+        Cria apenas contas dos bancos aceitos pelo app: Itaú, Nubank e Bradesco.
+        Agência e número da conta podem ficar vazios, mas banco e titular são
+        obrigatórios.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountCreate"
+            examples:
+              itauAlexandre:
+                value:
+                  nome: "Itaú Alexandre"
+                  agencia: "3830"
+                  numero_conta: "14196-0"
+                  banco: "itau"
+                  titular: "alexandre"
+      responses:
+        "201":
+          description: Conta criada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /accounts/{id}/:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      tags: [Contas]
+      summary: Detalha uma conta bancária ativa.
+      responses:
+        "200":
+          description: Conta encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      tags: [Contas]
+      summary: Altera parcialmente uma conta bancária.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountPatch"
+            examples:
+              renomear:
+                value:
+                  nome: "Itaú Principal"
+      responses:
+        "200":
+          description: Conta atualizada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+    delete:
+      tags: [Contas]
+      summary: Remove uma conta da listagem ativa.
+      description: Soft delete; define `ativa=false` e não apaga histórico.
+      responses:
+        "204":
+          description: Conta desativada.
+  /documents/:
+    get:
+      tags: [Documentos]
+      summary: Lista documentos de origem importados.
+      responses:
+        "200":
+          description: Documentos importados, mais recentes primeiro.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SourceDocument"
+  /documents/{id}/:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      tags: [Documentos]
+      summary: Detalha um documento de origem.
+      responses:
+        "200":
+          description: Documento encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDocument"
+  /transactions/:
+    get:
+      tags: [Lançamentos]
+      summary: Lista lançamentos financeiros.
+      description: Retorna lançamentos ordenados por data decrescente.
+      responses:
+        "200":
+          description: Lista de lançamentos.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FinancialTransaction"
+  /transactions/{id}/:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      tags: [Lançamentos]
+      summary: Detalha um lançamento financeiro.
+      responses:
+        "200":
+          description: Lançamento encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialTransaction"
+  /transactions/uncategorized/:
+    get:
+      tags: [Categorias]
+      summary: Lista todos os lançamentos sem categoria.
+      responses:
+        "200":
+          description: Lançamentos com `categoria=null`.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FinancialTransaction"
+  /transactions/to-reconcile/:
+    get:
+      tags: [Conciliação]
+      summary: Lista lançamentos sem categoria para conciliação.
+      description: Exclui lançamentos novos que ainda estão na fila `a_deduplicar`.
+      responses:
+        "200":
+          description: Lançamentos conciliáveis.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FinancialTransaction"
+  /transactions/{id}/category/:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    put:
+      tags: [Categorias]
+      summary: Define a categoria de um lançamento.
+      description: >
+        Quando `aplicar_no_periodo_atual=true`, aplica a categoria ao lançamento
+        e a lançamentos equivalentes do período atual conforme regras do domínio.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryUpdateRequest"
+            examples:
+              categorizar:
+                value:
+                  categoria_id: 5
+                  aplicar_no_periodo_atual: true
+      responses:
+        "200":
+          description: Lançamento categorizado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialTransaction"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /transactions/{id}/reconcile/:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    patch:
+      tags: [Conciliação]
+      summary: Edita descrição e/ou categoria durante conciliação.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReconciliationUpdateRequest"
+            examples:
+              conciliar:
+                value:
+                  descricao: "Padaria Central"
+                  categoria_id: 7
+      responses:
+        "200":
+          description: Lançamento atualizado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialTransaction"
+  /transactions/manual-expense/:
+    post:
+      tags: [Lançamentos]
+      summary: Cria uma despesa manual simples.
+      description: >
+        Cria lançamento de despesa com valor negativo na base. A resposta é 201
+        quando cria e 200 quando o lançamento já existia pela chave idempotente.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManualExpenseCreate"
+            examples:
+              despesaPix:
+                value:
+                  valor: "20.00"
+                  data: "2026-03-27"
+                  hora_aproximada: "20:18:57"
+                  meio_pagamento: "pix"
+                  categoria_id: 5
+                  descricao: "PIX QRS GIANT S BAR"
+                  id_externo: "opcional"
+      responses:
+        "201":
+          description: Despesa criada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManualTransactionResponse"
+        "200":
+          description: Despesa já existia e não foi duplicada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManualTransactionResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /transactions/manual-income/:
+    post:
+      tags: [Lançamentos]
+      summary: Cria uma receita manual.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManualIncomeCreate"
+            examples:
+              receitaPix:
+                value:
+                  valor: "1500.00"
+                  data: "2026-05-09"
+                  hora_aproximada: "09:30:00"
+                  meio_pagamento: "pix"
+                  categoria_id: 12
+                  descricao: "Receita de projeto"
+      responses:
+        "201":
+          description: Receita criada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManualTransactionResponse"
+        "200":
+          description: Receita já existia e não foi duplicada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManualTransactionResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /transactions/manual-pix/:
+    post:
+      tags: [Lançamentos]
+      summary: Cria lançamento PIX manual.
+      description: >
+        A descrição do PIX deve ser informada em `lancamento`; ela não é
+        inferida automaticamente pelo comprovante. `conta_id` é opcional e deve
+        apontar para conta ativa cadastrada.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManualPixCreate"
+            examples:
+              pixReal:
+                value:
+                  valor: "20.00"
+                  data_pix: "2026-03-27"
+                  hora_pix: "20:18:57"
+                  lancamento: "PIX QRS GIANT S BAR"
+                  destinatario: "giant s bar"
+                  categoria_id: 5
+                  conta_id: 1
+                  emitido_em: "2026-05-07T19:23:03-03:00"
+      responses:
+        "201":
+          description: PIX criado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManualTransactionResponse"
+        "200":
+          description: PIX já existia e não foi duplicado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManualTransactionResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /transactions/manual-pix-preview/:
+    post:
+      tags: [Lançamentos]
+      summary: Extrai dados de um comprovante PIX PDF.
+      description: >
+        Endpoint multipart para pré-leitura. Tenta extrair valor, data, hora,
+        banco, titular e destinatário. Nunca infere `descricao`; retorna
+        `descricao=""`. Campos não extraídos aparecem vazios e listados em
+        `campos_ausentes`.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/PixReceiptExtractRequest"
+      responses:
+        "200":
+          description: Dados extraídos do comprovante.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PixReceiptExtractResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /transactions/manual-pix/extract/:
+    post:
+      tags: [Lançamentos]
+      summary: Alias de extração usado pelo app.
+      description: Mesmo contrato de `/transactions/manual-pix-preview/`.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/PixReceiptExtractRequest"
+      responses:
+        "200":
+          description: Dados extraídos do comprovante.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PixReceiptExtractResponse"
+  /transactions/manual-pix-upload/:
+    post:
+      tags: [Lançamentos]
+      summary: Importa comprovante PIX como documento de origem.
+      description: >
+        Salva o PDF enviado, evita reimportação pelo hash do arquivo e tenta
+        inserir lançamentos. Use a rota de extração antes quando o usuário
+        precisar revisar os campos.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/ManualPixUploadRequest"
+      responses:
+        "201":
+          description: Comprovante importado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportUploadResponse"
+        "200":
+          description: Comprovante já importado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportUploadResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /categories/:
+    get:
+      tags: [Categorias]
+      summary: Lista categorias ativas.
+      responses:
+        "200":
+          description: Categorias ativas.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+    post:
+      tags: [Categorias]
+      summary: Cria categoria.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryCreate"
+            examples:
+              categoria:
+                value:
+                  nome: "Restaurantes"
+                  descricao: "Gastos com refeições fora de casa"
+      responses:
+        "201":
+          description: Categoria criada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+  /categories/{id}/:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    patch:
+      tags: [Categorias]
+      summary: Edita categoria.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryPatch"
+      responses:
+        "200":
+          description: Categoria atualizada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+  /categories/{id}/merge/:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      tags: [Categorias]
+      summary: Mescla uma categoria em outra.
+      description: >
+        A categoria de origem é absorvida pela categoria destino. Lançamentos e
+        sugestões históricas passam a apontar para a categoria destino, e a
+        categoria de origem deixa de aparecer como ativa.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryMergeRequest"
+      responses:
+        "200":
+          description: Resultado da mesclagem.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryMergeResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /suggestions/:
+    get:
+      tags: [Categorias]
+      summary: Lista sugestões de categoria.
+      responses:
+        "200":
+          description: Sugestões mais recentes primeiro.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategorySuggestion"
+  /suggestions/{id}/decision/:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      tags: [Categorias]
+      summary: Aceita ou rejeita sugestão.
+      description: Se `aceita=true`, aplica a categoria ao lançamento; depois remove a sugestão.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuggestionDecisionRequest"
+      responses:
+        "204":
+          description: Decisão registrada.
+  /imports/run:
+    post:
+      tags: [Importação]
+      summary: Executa importação de fontes configuradas ou arquivos locais.
+      description: >
+        Sem body, varre as pastas configuradas. Com `files`, importa os caminhos
+        informados. O endpoint é idempotente por hash de arquivo e retorna 200 OK.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImportRunRequest"
+      responses:
+        "200":
+          description: Resumo da importação.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportSummary"
+  /imports/pending:
+    get:
+      tags: [Importação]
+      summary: Conta pendências de importação/revisão.
+      responses:
+        "200":
+          description: Contagem de pendências.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PendingSummary"
+  /imports/upload/:
+    post:
+      tags: [Importação]
+      summary: Upload multipart genérico de extratos ou faturas.
+      description: >
+        Aceita múltiplos arquivos. Use `tipo=extrato` com `conta_id` obrigatório
+        para extratos de conta; use `tipo=cartao` para faturas/cartões.
+        Arquivos aceitos: PDF, CSV e OFX. A detecção considera extensão e tipo.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/ImportUploadRequest"
+      responses:
+        "200":
+          description: Resumo idempotente do upload.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportSummary"
+  /imports/bank-statements/:
+    post:
+      tags: [Importação]
+      summary: Upload de extratos de conta.
+      description: Alias do app para `tipo=extrato`; `conta_id` é obrigatório.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/BankStatementUploadRequest"
+      responses:
+        "200":
+          description: Resumo idempotente.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportSummary"
+  /imports/card-statements/:
+    post:
+      tags: [Importação]
+      summary: Upload de faturas/cartões.
+      description: Aceita múltiplos arquivos; não diferencia cartões.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/CardStatementUploadRequest"
+      responses:
+        "200":
+          description: Resumo idempotente.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportSummary"
+  /deduplication/:
+    get:
+      tags: [Conciliação]
+      summary: Lista pendências de deduplicação.
+      responses:
+        "200":
+          description: Pares existente/novo para decisão humana.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DeduplicationPending"
+  /deduplication/{id}/decision/:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      tags: [Conciliação]
+      summary: Resolve uma pendência de deduplicação.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeduplicationDecisionRequest"
+      responses:
+        "204":
+          description: Marcado como mesmo registro; lançamento novo removido.
+        "200":
+          description: Marcado como registro diferente; lançamento novo fica sem categoria.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialTransaction"
+  /reconciliation/uncategorized/:
+    get:
+      tags: [Conciliação]
+      summary: Alias do app para lançamentos sem categoria conciliáveis.
+      responses:
+        "200":
+          description: Lançamentos para conciliar.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FinancialTransaction"
+  /reconciliation/transactions/{id}/:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    patch:
+      tags: [Conciliação]
+      summary: Alias do app para editar lançamento em conciliação.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReconciliationUpdateRequest"
+      responses:
+        "200":
+          description: Lançamento atualizado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialTransaction"
+  /reconciliation/deduplication/:
+    get:
+      tags: [Conciliação]
+      summary: Alias do app para listar registros a deduplicar.
+      responses:
+        "200":
+          description: Pares no formato esperado pelo frontend.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReconciliationDeduplicationCandidate"
+  /reconciliation/deduplication/{id}/resolve/:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      tags: [Conciliação]
+      summary: Alias do app para resolver deduplicação.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReconciliationResolveRequest"
+      responses:
+        "204":
+          description: "action=same; lançamento novo removido."
+        "200":
+          description: "action=different; lançamento novo mantido sem categoria."
+  /reports/:
+    get:
+      tags: [Relatórios]
+      summary: Lista relatórios periódicos salvos.
+      responses:
+        "200":
+          description: Relatórios salvos.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PeriodicReport"
+  /reports/monthly/:
+    get:
+      tags: [Relatórios]
+      summary: Gera relatório mensal.
+      parameters:
+        - name: month
+          in: query
+          required: true
+          description: Mês de referência no formato `YYYY-MM`.
+          schema:
+            type: string
+            pattern: "^\\d{4}-\\d{2}$"
+          example: "2026-05"
+      responses:
+        "200":
+          description: Relatório mensal calculado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonthlyReport"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /reports/dashboard/:
+    get:
+      tags: [Relatórios]
+      summary: Retorna dados do dashboard Despesas do Mês.
+      parameters:
+        - name: month
+          in: query
+          required: false
+          description: Mês de referência; se omitido, usa o mês atual do servidor.
+          schema:
+            type: string
+            pattern: "^\\d{4}-\\d{2}$"
+          example: "2026-05"
+        - name: since
+          in: query
+          required: false
+          description: Data inicial para histórico e médias.
+          schema:
+            type: string
+            format: date
+          example: "2026-01-01"
+      responses:
+        "200":
+          description: Dashboard mensal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardReport"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+  responses:
+    ValidationError:
+      description: Payload inválido, parâmetro ausente ou valor fora do domínio aceito.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Recurso não encontrado.
+  schemas:
+    ErrorResponse:
+      type: object
+      additionalProperties: true
+      example:
+        detail: "Mensagem de erro."
+    Account:
+      type: object
+      required: [id, nome, agencia, numero_conta, banco, titular, ativa]
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+          maxLength: 120
+        agencia:
+          type: string
+          maxLength: 40
+        numero_conta:
+          type: string
+          maxLength: 80
+        banco:
+          type: string
+          enum: [itau, nubank, bradesco]
+        titular:
+          type: string
+          enum: [danielle, alexandre]
+        ativa:
+          type: boolean
+    AccountCreate:
+      type: object
+      required: [nome, banco, titular]
+      properties:
+        nome:
+          type: string
+          maxLength: 120
+        agencia:
+          type: string
+          maxLength: 40
+          default: ""
+        numero_conta:
+          type: string
+          maxLength: 80
+          default: ""
+        banco:
+          type: string
+          enum: [itau, nubank, bradesco]
+        titular:
+          type: string
+          enum: [danielle, alexandre]
+    AccountPatch:
+      allOf:
+        - $ref: "#/components/schemas/AccountCreate"
+      required: []
+    SourceDocument:
+      type: object
+      required: [id, tipo, caminho, importado_em, conta, vencimento, metadados]
+      properties:
+        id:
+          type: integer
+        tipo:
+          type: string
+          description: Tipo de origem, como `ofx`, `statement`, `card`, `pix` ou tipos legados.
+        caminho:
+          type: string
+        importado_em:
+          type: string
+          format: date-time
+        conta:
+          type: integer
+          nullable: true
+        vencimento:
+          type: string
+          format: date
+          nullable: true
+        metadados:
+          type: object
+          additionalProperties: true
+    FinancialTransaction:
+      type: object
+      required: [id, data, hora_aproximada, descricao, valor, categoria, meio_pagamento, documento_origem, pendente_revisao, metadados]
+      properties:
+        id:
+          type: integer
+        data:
+          type: string
+          format: date
+        hora_aproximada:
+          type: string
+          format: time
+          nullable: true
+        descricao:
+          type: string
+          maxLength: 300
+        valor:
+          type: string
+          pattern: "^-?\\d+(\\.\\d{2})$"
+          description: Decimal como string; despesas normalmente são negativas e receitas positivas.
+          example: "-20.00"
+        categoria:
+          type: integer
+          nullable: true
+        meio_pagamento:
+          type: string
+          enum: ["", pix, cartao, outro]
+        documento_origem:
+          type: integer
+        pendente_revisao:
+          type: boolean
+        metadados:
+          type: object
+          additionalProperties: true
+    ManualExpenseCreate:
+      type: object
+      required: [valor, data, meio_pagamento, categoria_id, descricao]
+      properties:
+        valor:
+          type: string
+          pattern: "^-?\\d+(\\.\\d{2})$"
+        data:
+          type: string
+          format: date
+        hora_aproximada:
+          type: string
+          format: time
+          nullable: true
+        meio_pagamento:
+          type: string
+          enum: [pix, cartao]
+        categoria_id:
+          type: integer
+        descricao:
+          type: string
+          maxLength: 300
+        id_externo:
+          type: string
+          maxLength: 120
+    ManualIncomeCreate:
+      allOf:
+        - $ref: "#/components/schemas/ManualExpenseCreate"
+        - type: object
+          properties:
+            meio_pagamento:
+              type: string
+              enum: [pix, cartao, outro]
+    ManualPixCreate:
+      type: object
+      required: [valor, data_pix, hora_pix, lancamento, destinatario, categoria_id]
+      properties:
+        valor:
+          type: string
+          pattern: "^-?\\d+(\\.\\d{2})$"
+        data_pix:
+          type: string
+          format: date
+        hora_pix:
+          type: string
+          format: time
+        lancamento:
+          type: string
+          maxLength: 300
+          description: Descrição informada pelo usuário; não é inferida do PDF.
+        destinatario:
+          type: string
+          maxLength: 300
+        categoria_id:
+          type: integer
+        conta_id:
+          type: integer
+          nullable: true
+        emitido_em:
+          type: string
+          format: date-time
+        conta_origem:
+          type: object
+          deprecated: true
+          properties:
+            agencia:
+              type: string
+            conta:
+              type: string
+        id_externo:
+          type: string
+          maxLength: 120
+    ManualTransactionResponse:
+      allOf:
+        - $ref: "#/components/schemas/FinancialTransaction"
+        - type: object
+          required: [duplicado]
+          properties:
+            duplicado:
+              type: boolean
+    PixReceiptExtractRequest:
+      type: object
+      required: [arquivo]
+      properties:
+        arquivo:
+          type: string
+          format: binary
+          description: PDF do comprovante PIX.
+    PixReceiptExtractResponse:
+      type: object
+      required: [valor, data_pix, hora_pix, banco, titular, destinatario, descricao, campos_ausentes, conta_id, conta_nome]
+      properties:
+        valor:
+          type: string
+          example: "-20.00"
+        data_pix:
+          type: string
+          format: date
+          example: "2026-03-27"
+        hora_pix:
+          type: string
+          format: time
+          example: "20:18:57"
+        banco:
+          type: string
+          enum: ["", itau, nubank, bradesco]
+        titular:
+          type: string
+          enum: ["", danielle, alexandre]
+        destinatario:
+          type: string
+        descricao:
+          type: string
+          description: Sempre vazio; o usuário deve preencher.
+          example: ""
+        campos_ausentes:
+          type: array
+          items:
+            type: string
+            enum: [valor, data_pix, hora_pix]
+        conta_id:
+          type: integer
+          nullable: true
+        conta_nome:
+          type: string
+    ManualPixUploadRequest:
+      type: object
+      required: [arquivo]
+      properties:
+        arquivo:
+          type: string
+          format: binary
+        categoria_id:
+          type: integer
+          nullable: true
+    Category:
+      type: object
+      required: [id, nome, descricao, ativa]
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+          maxLength: 120
+        descricao:
+          type: string
+        ativa:
+          type: boolean
+    CategoryCreate:
+      type: object
+      required: [nome]
+      properties:
+        nome:
+          type: string
+          maxLength: 120
+        descricao:
+          type: string
+          default: ""
+    CategoryPatch:
+      type: object
+      properties:
+        nome:
+          type: string
+          maxLength: 120
+        descricao:
+          type: string
+        ativa:
+          type: boolean
+    CategoryUpdateRequest:
+      type: object
+      required: [categoria_id]
+      properties:
+        categoria_id:
+          type: integer
+        aplicar_no_periodo_atual:
+          type: boolean
+          default: true
+    CategoryMergeRequest:
+      type: object
+      required: [categoria_destino_id]
+      properties:
+        categoria_destino_id:
+          type: integer
+          description: Categoria ativa que absorverá a categoria da URL.
+    CategoryMergeResponse:
+      type: object
+      required: [categoria_origem_id, categoria_destino_id, lancamentos_atualizados, sugestoes_atualizadas]
+      properties:
+        categoria_origem_id:
+          type: integer
+        categoria_destino_id:
+          type: integer
+        lancamentos_atualizados:
+          type: integer
+        sugestoes_atualizadas:
+          type: integer
+    CategorySuggestion:
+      type: object
+      required: [id, lancamento, categoria, confianca, origem_regra, criada_em]
+      properties:
+        id:
+          type: integer
+        lancamento:
+          type: integer
+        categoria:
+          type: integer
+        confianca:
+          type: string
+        origem_regra:
+          type: string
+        criada_em:
+          type: string
+          format: date-time
+    SuggestionDecisionRequest:
+      type: object
+      required: [aceita]
+      properties:
+        aceita:
+          type: boolean
+    ImportRunRequest:
+      type: object
+      properties:
+        files:
+          type: array
+          items:
+            type: object
+            required: [source_type, path]
+            properties:
+              source_type:
+                type: string
+                enum: [statement, ofx, card, pix]
+              path:
+                type: string
+    ImportUploadRequest:
+      type: object
+      required: [tipo, arquivos]
+      properties:
+        tipo:
+          type: string
+          enum: [extrato, cartao]
+        conta_id:
+          type: integer
+          nullable: true
+          description: Obrigatório quando `tipo=extrato`.
+        vencimento:
+          type: string
+          format: date
+          nullable: true
+          description: Vencimento da fatura, usado no total de cartões do mês.
+        arquivos:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: binary
+    BankStatementUploadRequest:
+      type: object
+      required: [conta_id, arquivos]
+      properties:
+        conta_id:
+          type: integer
+        arquivos:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: binary
+    CardStatementUploadRequest:
+      type: object
+      required: [arquivos]
+      properties:
+        vencimento:
+          type: string
+          format: date
+          nullable: true
+        arquivos:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: binary
+    ImportSummary:
+      type: object
+      required: [documentos_processados, lancamentos_criados, pendencias]
+      properties:
+        documentos_processados:
+          type: integer
+          minimum: 0
+        lancamentos_criados:
+          type: integer
+          minimum: 0
+        pendencias:
+          type: integer
+          minimum: 0
+        documento_origem:
+          type: integer
+        duplicado:
+          type: boolean
+        categoria_atribuida:
+          type: integer
+          nullable: true
+        lancamentos_categorizados:
+          type: integer
+    PendingSummary:
+      type: object
+      required: [pendencias]
+      properties:
+        pendencias:
+          type: integer
+          minimum: 0
+    ReconciliationUpdateRequest:
+      type: object
+      properties:
+        descricao:
+          type: string
+          maxLength: 300
+        categoria_id:
+          type: integer
+          nullable: true
+    DeduplicationPending:
+      type: object
+      required: [id, status, motivo, criado_em, resolvido_em, lancamento_existente, lancamento_novo]
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+          enum: [a_deduplicar, confirmada_duplicada, registro_diferente]
+        motivo:
+          type: string
+        criado_em:
+          type: string
+          format: date-time
+        resolvido_em:
+          type: string
+          format: date-time
+          nullable: true
+        lancamento_existente:
+          $ref: "#/components/schemas/FinancialTransaction"
+        lancamento_novo:
+          $ref: "#/components/schemas/FinancialTransaction"
+    DeduplicationDecisionRequest:
+      type: object
+      required: [decisao]
+      properties:
+        decisao:
+          type: string
+          enum: [mesmo_registro, registro_diferente]
+    ReconciliationDeduplicationCandidate:
+      type: object
+      required: [id, motivo, existente, novo]
+      properties:
+        id:
+          type: integer
+        motivo:
+          type: string
+        existente:
+          $ref: "#/components/schemas/FinancialTransaction"
+        novo:
+          $ref: "#/components/schemas/FinancialTransaction"
+    ReconciliationResolveRequest:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+          enum: [same, different]
+    PeriodicReport:
+      type: object
+      required: [id, referencia, total_receitas, total_despesas, saldo, fechado]
+      properties:
+        id:
+          type: integer
+        referencia:
+          type: string
+          pattern: "^\\d{4}-\\d{2}$"
+        total_receitas:
+          type: string
+        total_despesas:
+          type: string
+        saldo:
+          type: string
+        fechado:
+          type: boolean
+    MonthlyReport:
+      type: object
+      required: [referencia, total_receitas, total_despesas, saldo, pendencias_revisao, totais_categoria, resumo_diario]
+      properties:
+        referencia:
+          type: string
+          pattern: "^\\d{4}-\\d{2}$"
+        total_receitas:
+          type: string
+        total_despesas:
+          type: string
+        saldo:
+          type: string
+        pendencias_revisao:
+          type: integer
+        totais_categoria:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryTotal"
+        resumo_diario:
+          type: array
+          items:
+            $ref: "#/components/schemas/DailySummary"
+    DashboardReport:
+      type: object
+      required:
+        - referencia
+        - inicio
+        - meses
+        - saldo_atual_contas
+        - pagamento_cartao_previsto
+        - total_cartoes_mes_atual
+        - saldo_apos_cartao
+        - total_mes_atual
+        - total_despesas_mes_atual
+        - total_receitas_mes_atual
+        - media_mensal_total
+        - receitas_por_categoria
+        - despesas_por_categoria
+        - categorias
+      properties:
+        referencia:
+          type: string
+        inicio:
+          type: string
+          format: date
+        meses:
+          type: array
+          items:
+            type: string
+        saldo_atual_contas:
+          type: string
+        pagamento_cartao_previsto:
+          type: string
+        total_cartoes_mes_atual:
+          type: string
+        saldo_apos_cartao:
+          type: string
+          description: Campo legado; no UI aparece como Saldo Atual.
+        total_mes_atual:
+          type: string
+        total_despesas_mes_atual:
+          type: string
+        total_receitas_mes_atual:
+          type: string
+        media_mensal_total:
+          type: string
+        receitas_por_categoria:
+          type: array
+          items:
+            $ref: "#/components/schemas/IncomeCategoryTotal"
+        despesas_por_categoria:
+          type: array
+          items:
+            $ref: "#/components/schemas/DashboardCategory"
+        categorias:
+          type: array
+          items:
+            $ref: "#/components/schemas/DashboardCategory"
+    CategoryTotal:
+      type: object
+      required: [categoria, total, quantidade]
+      properties:
+        categoria:
+          type: string
+        total:
+          type: string
+        quantidade:
+          type: integer
+    DailySummary:
+      type: object
+      required: [data, total]
+      properties:
+        data:
+          type: string
+          format: date
+        total:
+          type: string
+    IncomeCategoryTotal:
+      type: object
+      required: [categoria, total]
+      properties:
+        categoria:
+          type: string
+        total:
+          type: string
+    DashboardCategory:
+      type: object
+      required: [categoria_id, categoria, total_mes_atual, media_mensal, total_periodo, historico]
+      properties:
+        categoria_id:
+          type: integer
+          nullable: true
+        categoria:
+          type: string
+        total_mes_atual:
+          type: string
+        media_mensal:
+          type: string
+        total_periodo:
+          type: string
+        historico:
+          type: array
+          items:
+            type: object
+            required: [mes, total]
+            properties:
+              mes:
+                type: string
+              total:
+                type: string

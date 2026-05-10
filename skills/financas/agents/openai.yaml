@@ -1,0 +1,4 @@
+interface:
+  display_name: "Finanças"
+  short_description: "Atualizar e consultar finanças locais."
+  default_prompt: "Use a skill finanças para qualquer mensagem ou áudio que peça atualizar finanças ou usar a skill finanças; leia o schema vivo em localhost:8000/api/schema/?format=json antes de chamar a API local."

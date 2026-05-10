@@ -135,7 +135,6 @@ return command switch
     "convert-text-formulas-to-omath" => ConvertTextFormulasToOfficeMath(docxPath, commandOptions),
     "repair-article-abnt-layout" => RepairArticleAbntLayout(docxPath, commandOptions),
     "format-abnt-reference-titles" => FormatAbntReferenceTitles(docxPath, commandOptions),
-    "repair-validation" => RepairValidation(docxPath, commandOptions),
     "apply-crossrefs" => ApplyCrossrefs(docxPath, commandOptions),
     "add-bookmarks" => AddBookmarks(docxPath, commandOptions),
     "rewrite-ref-fields" => RewriteRefFields(docxPath, commandOptions),
@@ -344,7 +343,7 @@ static int AppendParagraphs(string docxPath, IReadOnlyDictionary<string, string>
         applied.Add(spec.Id);
     }
 
-    doc.MainDocumentPart!.Document.Save();
+    SaveMainDocumentWithValidationRepair(doc, applied);
 
     if (options.TryGetValue("report", out var reportPathValue) && !string.IsNullOrWhiteSpace(reportPathValue))
     {
@@ -659,10 +658,6 @@ Reparos e ajustes academicos:
   format-abnt-reference-titles <docx> [--author NAME] --lock <lockfile> [--target publication|article|both] [--emphasis italic|bold] [--report md]
     Aplica destaque ABNT em titulos de referencias conforme alvo e enfase.
     Exemplo: docx-utils format-abnt-reference-titles tese.docx --lock tese.lock --target both --emphasis bold
-
-  repair-validation <docx> [--author NAME] --lock <lockfile> [--report md]
-    Remove/ajusta marcadores Open XML conhecidos que causam erros de validacao.
-    Exemplo: docx-utils repair-validation tese.docx --lock tese.lock --report validacao.md
 
   repair-style-captions <docx> --plan <json> [--author NAME] --lock <lockfile> [--report md]
     Repara estilos de legendas conforme plano de captions/crossrefs.
@@ -1993,7 +1988,7 @@ static int InsertTracked(string docxPath, IReadOnlyDictionary<string, string> op
                 Console.WriteLine($"APPLY {spec.Id}: inserted after P[{after.Index}] before P[{before.Index}]");
             }
 
-            doc.MainDocumentPart!.Document.Save();
+            SaveMainDocumentWithValidationRepair(doc, applied);
         }
 
         if (options.TryGetValue("report", out var reportPathValue) && !string.IsNullOrWhiteSpace(reportPathValue))
@@ -2148,7 +2143,7 @@ static int ApplyBlockMutationPlan(
         applied.Add(spec.Id);
     }
 
-    doc.MainDocumentPart!.Document.Save();
+    SaveMainDocumentWithValidationRepair(doc, applied);
 
     if (options.TryGetValue("report", out var reportPathValue) && !string.IsNullOrWhiteSpace(reportPathValue))
     {
@@ -2268,7 +2263,7 @@ static int EditParagraphs(string docxPath, IReadOnlyDictionary<string, string> o
         applied.Add(edit.Id);
     }
 
-    doc.MainDocumentPart!.Document.Save();
+    SaveMainDocumentWithValidationRepair(doc, applied);
 
     if (options.TryGetValue("report", out var reportPathValue) && !string.IsNullOrWhiteSpace(reportPathValue))
     {
@@ -2370,7 +2365,7 @@ static int StyleRunningText(string docxPath, IReadOnlyDictionary<string, string>
     }
 
     NormalizeFormattingRevisionMarkup(doc);
-    doc.MainDocumentPart!.Document.Save();
+    SaveMainDocumentWithValidationRepair(doc);
 
     var validationErrors = new OpenXmlValidator()
         .Validate(doc)
@@ -2418,25 +2413,9 @@ static int StyleRunningText(string docxPath, IReadOnlyDictionary<string, string>
     return validationErrors.Count == 0 ? 0 : 8;
 }
 
-static int RepairValidation(string docxPath, IReadOnlyDictionary<string, string> options)
+static IReadOnlyList<string> RepairValidationBeforeSave(WordprocessingDocument doc)
 {
-    var author = ResolveMutationAuthor(docxPath, options);
-
-    if (!options.TryGetValue("lock", out var lockPathValue) || string.IsNullOrWhiteSpace(lockPathValue))
-    {
-        Console.Error.WriteLine("Missing required option: --lock");
-        return 4;
-    }
-
-    var lockPath = Path.GetFullPath(lockPathValue);
-    Directory.CreateDirectory(Path.GetDirectoryName(lockPath) ?? ".");
-    using var lockStream = new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
-    lockStream.SetLength(0);
-    lockStream.Write(Encoding.UTF8.GetBytes($"docx-utils repair-validation {DateTime.UtcNow:O}\n"));
-    lockStream.Flush();
-
     var changes = new List<string>();
-    using var doc = WordprocessingDocument.Open(docxPath, true);
     EnsureTrackRevisions(doc);
 
     var nextId = 1;
@@ -2510,28 +2489,18 @@ static int RepairValidation(string docxPath, IReadOnlyDictionary<string, string>
     }
     changes.Add($"w14_ligatures_removed={ligatureCount}");
 
+    return changes;
+}
+
+static void SaveMainDocumentWithValidationRepair(WordprocessingDocument doc, List<string>? applied = null)
+{
+    _ = RepairValidationBeforeSave(doc);
+
     var mainPart = doc.MainDocumentPart
         ?? throw new InvalidOperationException("DOCX sem MainDocumentPart.");
     var mainDocument = mainPart.Document
         ?? throw new InvalidOperationException("DOCX sem documento principal.");
     mainDocument.Save();
-
-    if (options.TryGetValue("report", out var reportPathValue) && !string.IsNullOrWhiteSpace(reportPathValue))
-    {
-        var reportPath = Path.GetFullPath(reportPathValue);
-        Directory.CreateDirectory(Path.GetDirectoryName(reportPath) ?? ".");
-        var builder = new StringBuilder();
-        builder.AppendLine("# Repair Validation Report");
-        builder.AppendLine();
-        builder.AppendLine($"- DOCX: `{docxPath}`");
-        builder.AppendLine($"- Autor: `{author}`");
-        builder.AppendLine($"- Lock: `{lockPath}`");
-        foreach (var change in changes) builder.AppendLine($"- {change}");
-        File.WriteAllText(reportPath, builder.ToString(), Encoding.UTF8);
-    }
-
-    foreach (var change in changes) Console.WriteLine($"APPLY {change}");
-    return 0;
 }
 
 static int ApplyCrossrefs(string docxPath, IReadOnlyDictionary<string, string> options)
@@ -4134,7 +4103,7 @@ static int ReplaceTable(string docxPath, IReadOnlyDictionary<string, string> opt
         applied.Add($"{spec.Id}: table ordinal {selection.Ordinal} block {selection.BlockIndex} replaced with {spec.Rows.Count} row(s)");
     }
 
-    doc.MainDocumentPart!.Document.Save();
+    SaveMainDocumentWithValidationRepair(doc, applied);
     WriteAppliedReport(reportPath, "Replace Table Report", docxPath, author, lockPath, applied, skipped);
     foreach (var item in applied) Console.WriteLine($"APPLY {item}");
     foreach (var item in skipped) Console.WriteLine($"SKIP {item}");
