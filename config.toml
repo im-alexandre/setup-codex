@@ -101,6 +101,9 @@ trust_level = "trusted"
 [projects."/home/imale/.codex"]
 trust_level = "trusted"
 
+[projects."/home/imale/openclaw"]
+trust_level = "trusted"
+
 [windows]
 sandbox = "elevated"
 
