@@ -2357,7 +2357,7 @@ static int StyleRunningText(string docxPath, IReadOnlyDictionary<string, string>
         .Take(20)
         .Select(e => e.Description)
         .ToList();
-    var trackRevisions = doc.MainDocumentPart.DocumentSettingsPart?.Settings?.Elements<TrackRevisions>().Any() == true;
+    var trackRevisions = doc.MainDocumentPart!.DocumentSettingsPart?.Settings?.Elements<TrackRevisions>().Any() == true;
 
     if (options.TryGetValue("report", out var reportPathValue) && !string.IsNullOrWhiteSpace(reportPathValue))
     {
@@ -6311,14 +6311,6 @@ static string DescribeTableSelector(ReplaceTableSpec spec)
 
     return parts.Count == 0 ? "selector" : $"selector({string.Join(", ", parts)})";
 }
-
-static bool HasTableSelector(ReplaceTableSpec spec) =>
-    (spec.Ordinal is > 0)
-    || (spec.BlockIndex is > 0)
-    || (spec.Block is > 0)
-    || !string.IsNullOrWhiteSpace(spec.FirstCellText)
-    || !string.IsNullOrWhiteSpace(spec.PreviousParagraphPrefix)
-    || !string.IsNullOrWhiteSpace(spec.NextParagraphPrefix);
 
 static IReadOnlyList<int> ResolveReplacementTableColumnWidths(Table table, int columnCount)
 {
