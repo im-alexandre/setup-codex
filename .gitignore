@@ -32,6 +32,7 @@ memories/
 pets/
 vendor_imports/
 presets/mcp/mendeley-mcp/
+preset/servicos/data/postgres/
 
 # Backups e temporários
 backups/
@@ -84,3 +85,5 @@ exports/
 **/*.pem
 **/*secret*
 **/*token*
+presets/skill-services.json
+presets/skills-services.json
