@@ -1,0 +1,4 @@
+interface:
+  display_name: "Coolify Deploy"
+  short_description: "Publica apps Docker Compose no Coolify via API."
+  default_prompt: "Use esta skill para criar ou atualizar um projeto/app no Coolify, configurar envs, disparar deploy e validar o dominio."
