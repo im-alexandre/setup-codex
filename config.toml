@@ -101,6 +101,9 @@ trust_level = "trusted"
 [projects."/home/imale/.codex"]
 trust_level = "trusted"
 
+[projects.'d:\portifolio_quantico']
+trust_level = "trusted"
+
 
 [windows]
 sandbox = "elevated"
@@ -145,6 +148,6 @@ theme = "gruvbox-dark"
 "gpt-5.5" = 4
 
 [marketplaces.openai-bundled]
-last_updated = "2026-05-08T00:58:14Z"
+last_updated = "2026-05-12T16:49:44Z"
 source_type = "local"
 source = '\\?\C:\Users\imale\.codex\.tmp\bundled-marketplaces\openai-bundled'
