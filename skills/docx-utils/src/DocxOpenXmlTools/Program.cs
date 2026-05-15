@@ -538,7 +538,7 @@ Estilos e formatacao:
     Exemplo: docx-utils replace-blocks tese.docx --plan blocos.json --lock tese.lock --report blocos.md
 
   validate-plan <comando> --plan <json>
-    Valida o contrato JSON de `insert-blocks`, `replace-blocks` ou `replace-table` sem mutar o DOCX.
+    Valida o contrato JSON de `create-docx`, `insert-blocks`, `replace-blocks` ou `replace-table` sem mutar o DOCX.
     Exemplo: docx-utils validate-plan insert-blocks --plan blocos.json
 
   plan-contracts [comando] [--format markdown|json]

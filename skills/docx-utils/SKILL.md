@@ -50,12 +50,26 @@ Use esta skill quando precisar trabalhar com utilitários .NET para inspeção, 
 - `agents/dotnet-docx-maintainer.yaml`: manifesto de descoberta do agente mantenedor .NET DOCX.
 - `references/plan-contracts.md`: contratos minimos e exemplos JSON para `create-docx`, `insert-blocks`, `replace-blocks` e `replace-table`.
 - `references/plan-contracts.json`: fonte machine-readable dos contratos operacionais.
+- `references/estilos/README.md`: referencia dos estilos canônicos extraidos da dissertação, incluindo `tabelauerj`, `Tabela`, `Figura`, `dados` e `legenda0`.
 
 ## Agentes
 
 - Use `agents/mantenedor-dotnet-docx.md` quando a tarefa envolver implementação, depuração, testes, revisão ou manutenção da fonte .NET em `src/`.
 - O agente mantenedor deve combinar as skills `dotnet-cli`, `csharp`, `xunit-tdd`, `openxml-sdk`, `docx-cli-contracts`, `nuget-msbuild`, `published-binary-first` e `cross-platform-installers`.
 - Para tarefas operacionais em DOCX, continue seguindo a regra principal desta skill: use o binário publicado `docx-utils` por padrão.
+
+## Superfície Operacional
+
+Use `docx-utils --help` como fonte final da CLI. A superfície publicada inclui:
+
+- Criação e contratos: `create-docx`, `create-article`, `plan-contracts`, `validate-plan`.
+- Inspeção e auditoria: `paragraphs`, `paragraph-detail`, `structure-audit`, `layout-audit`, `equations-audit`, `math-audit`, `math-text-audit`, `linear-equation-plan-preview`, `revisions`, `comments`, `comment-anchors`, `next-author`, `validate`.
+- Estilos e tabelas: `export-used-styles`, `ensure-canonical-styles`, `sync-styles-from-docx`, `style-running-text`, `ensure-style-fonts`, `format-equation-paragraphs`, `normalize-figure-indent`, `apply-table-design-style`, `replace-table`, `replace-blocks`.
+- Edição textual: `insert-tracked`, `insert-blocks`, `append-paragraphs`, `edit-paragraphs`.
+- Figuras, fórmulas e referências: `insert-figures`, `replace-figures-from-plan`, `rewrite-equation-blocks`, `replace-formulas-with-linear-equations`, `replace-formulas-with-mathml-omml`, `convert-text-formulas-to-omath`, `apply-crossrefs`, `add-bookmarks`, `rewrite-ref-fields`.
+- Comentários: `insert-comments`, `reanchor-comments`, `answer-comments`, `reply-comments`, `remove-comments`.
+- Reparos e finalização: `repair-article-abnt-layout`, `format-abnt-reference-titles`, `repair-style-captions`, `repair-layout-pendencies`, `repair-ref-number-only`, `accept-revisions`.
+- Automação de autoria: `next-author` verifica o próximo autor livre sem alterar o DOCX; comandos mutadores podem omitir `--author` na thread principal.
 
 ## Planos de blocos e tabelas
 
