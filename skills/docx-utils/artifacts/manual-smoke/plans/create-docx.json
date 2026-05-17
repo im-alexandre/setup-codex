@@ -1,0 +1,39 @@
+{
+  "title": "Smoke Docx Utils",
+  "subtitles": ["Documento real gerado por docx-utils"],
+  "authorLine": "Smoke Runner",
+  "paragraphs": [
+    "Introducao",
+    "Depois da introducao",
+    "Antes dos blocos",
+    "Texto antes",
+    "Texto depois",
+    "Abertura do intervalo.",
+    "Paragrafo intermediario 1",
+    "Paragrafo intermediario 2",
+    "Fechamento do intervalo.",
+    "Ancora tracked antes",
+    "Ancora tracked depois",
+    "Ancora da figura",
+    "Depois da figura",
+    "Comentario anchor original",
+    "Comentario anchor novo",
+    "Legenda Crossref",
+    "Conforme Figura smoke.",
+    "Formula linear alvo: a+b=c",
+    "Formula alias alvo: m+n=p",
+    "Ancora equacao reescrita",
+    "Conclusao original"
+  ],
+  "sections": [
+    {
+      "heading": "Secao Smoke",
+      "level": 1,
+      "paragraphs": ["Texto da secao smoke."]
+    }
+  ],
+  "references": [
+    "GNEITING, TILMANN. Predictive distributions and scoring rules. Journal of Smoke, 2026.",
+    "FONTANA, MARIA. Portfolio tests. Smoke Review, 2026."
+  ]
+}

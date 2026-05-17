@@ -1,0 +1,30 @@
+{
+  "inputPath": "C:\\Users\\imale\\.codex\\skills\\docx-utils\\artifacts\\manual-smoke\\smoke-main.docx",
+  "planPath": "C:\\Users\\imale\\.codex\\skills\\docx-utils\\artifacts\\manual-smoke\\plans\\crossrefs.json",
+  "captions": [
+    {
+      "id": "caption-1",
+      "styleId": "Figura",
+      "label": "Figura",
+      "sequence": "Figura",
+      "number": 1,
+      "bookmark": "xref_fig_1",
+      "anchorText": "Legenda Crossref"
+    }
+  ],
+  "replacements": [
+    {
+      "id": "xref-call-1",
+      "paragraphPrefix": "Conforme Figura smoke.",
+      "replacements": [
+        {
+          "oldText": "Figura smoke",
+          "parts": [
+            { "text": "Figura " },
+            { "ref": "xref_fig_1", "result": "1" }
+          ]
+        }
+      ]
+    }
+  ]
+}

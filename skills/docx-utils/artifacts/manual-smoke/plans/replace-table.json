@@ -1,0 +1,12 @@
+{
+  "tables": [
+    {
+      "id": "replace-table-1",
+      "ordinal": 1,
+      "rows": [
+        ["Novo A1", "Novo A2"],
+        ["Novo B1", "Novo B2"]
+      ]
+    }
+  ]
+}

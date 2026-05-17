@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Session Tracker"
+  short_description: "Consulta sessoes Codex, workers e retomada por thread."
+  default_prompt: "Use esta skill para listar sessoes Codex vivas, consultar workers/subagentes e retomar uma thread pelo session_id."

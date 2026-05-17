@@ -1,0 +1,57 @@
+﻿# Style Running Text Report
+
+- DOCX: `C:\Users\imale\.codex\skills\docx-utils\artifacts\manual-smoke\smoke-main.docx`
+- Autor: `Brainiac-1`
+- Lock: `C:\Users\imale\.codex\skills\docx-utils\artifacts\manual-smoke\style-running.lock`
+- Estilo alvo: `Normal`
+- Fonte alvo: `Times New Roman`
+- Tamanho alvo: `24` half-points (12 pt)
+- Paragrafos alterados: 1
+- Paragrafos elegiveis ja conformes: 0
+- Paragrafos ignorados: 33
+- TrackRevisions ativo: True
+- Erros Open XML detectados: 8
+  - The element has child element 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:pPr' of invalid type 'PreviousParagraphProperties'.
+  - The element has unexpected child element 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:tabs'.
+  - The 'http://schemas.microsoft.com/office/word/2010/wordml:paraId' attribute is not declared.
+  - The 'http://schemas.microsoft.com/office/word/2010/wordml:textId' attribute is not declared.
+  - The 'http://schemas.microsoft.com/office/word/2010/wordml:paraId' attribute is not declared.
+  - The 'http://schemas.microsoft.com/office/word/2010/wordml:textId' attribute is not declared.
+  - The 'http://schemas.microsoft.com/office/word/2010/wordml:paraId' attribute is not declared.
+  - The 'http://schemas.microsoft.com/office/word/2010/wordml:textId' attribute is not declared.
+
+## Detalhe
+- SKIP P[0] document title: Smoke Docx Utils
+- SKIP P[1] short non-running paragraph: Documento real gerado por docx-utils
+- SKIP P[2] short non-running paragraph: Smoke Runner
+- SKIP P[3] short non-running paragraph: Introducao
+- SKIP P[4] short non-running paragraph: Depois da introducao
+- SKIP P[5] short non-running paragraph: Paragrafo via insert-blocks
+- SKIP P[6] short non-running paragraph: Antes dos blocos
+- SKIP P[7] short non-running paragraph: Texto antes
+- SKIP P[8] short non-running paragraph: Texto depois
+- SKIP P[9] short non-running paragraph: Abertura do intervalo.
+- SKIP P[10] short non-running paragraph: Texto novo do replace-blocks
+- SKIP P[11] short non-running paragraph: Fechamento do intervalo.
+- SKIP P[12] short non-running paragraph: Ancora tracked antes
+- SKIP P[13] short non-running paragraph: Paragrafo tracked inserido
+- SKIP P[14] short non-running paragraph: Ancora tracked depois
+- SKIP P[15] protected style Figura: Figura smoke substituida
+- SKIP P[17] caption: Figura 2 - Figura smoke inserida
+- SKIP P[18] source paragraph: Fonte: Smoke
+- SKIP P[19] short non-running paragraph: Depois da figura
+- SKIP P[20] short non-running paragraph: Comentario anchor original
+- SKIP P[21] short non-running paragraph: Comentario anchor novo
+- SKIP P[22] protected style Figura: Legenda Crossref
+- SKIP P[23] short non-running paragraph: Conforme Figura 1.
+- SKIP P[24] math object: Formula linear alvo:
+- SKIP P[25] math object: Formula alias alvo:
+- SKIP P[26] short non-running paragraph: Ancora equacao reescrita
+- SKIP P[27] math object: (1)
+- SKIP P[28] short non-running paragraph: Conclusao editada
+- SKIP P[29] short non-running paragraph: Secao Smoke
+- SKIP P[30] short non-running paragraph: Texto da secao smoke.
+- SKIP P[31] short non-running paragraph: REFERÊNCIAS
+- CHANGE P[32] running text: GNEITING, TILMANN. Predictive distributions and scoring rules. Journal of Smoke, 2026.
+- SKIP P[33] short non-running paragraph: FONTANA, MARIA. Portfolio tests. Smoke Review, 2026.
+- SKIP P[34] short non-running paragraph: Paragrafo append smoke

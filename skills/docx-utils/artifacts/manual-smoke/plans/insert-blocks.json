@@ -1,0 +1,25 @@
+{
+  "blocks": [
+    {
+      "id": "insert-blocks-1",
+      "afterPrefix": "Depois da introducao",
+      "beforePrefix": "Antes dos blocos",
+      "items": [
+        {
+          "kind": "paragraph",
+          "text": "Paragrafo via insert-blocks",
+          "styleId": "CorpoTexto"
+        },
+        {
+          "kind": "table",
+          "tableStyleId": "tabelauerj",
+          "cellStyleId": "dados",
+          "rows": [
+            ["I1", "I2"],
+            ["I3", "I4"]
+          ]
+        }
+      ]
+    }
+  ]
+}

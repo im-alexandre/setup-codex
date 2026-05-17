@@ -1,0 +1,11 @@
+{
+  "inputPath": "C:\\Users\\imale\\.codex\\skills\\docx-utils\\artifacts\\manual-smoke\\smoke-main.docx",
+  "planPath": "C:\\Users\\imale\\.codex\\skills\\docx-utils\\artifacts\\manual-smoke\\plans\\bookmarks.json",
+  "bookmarks": [
+    {
+      "id": "bookmark-1",
+      "paragraphPrefix": "Conforme Figura smoke.",
+      "bookmark": "xref_fig_smoke_manual"
+    }
+  ]
+}

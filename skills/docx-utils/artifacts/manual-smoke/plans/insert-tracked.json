@@ -1,0 +1,9 @@
+[
+  {
+    "id": "tracked-1",
+    "afterPrefix": "Ancora tracked antes",
+    "beforePrefix": "Ancora tracked depois",
+    "content": "Paragrafo tracked inserido",
+    "styleSource": "after"
+  }
+]

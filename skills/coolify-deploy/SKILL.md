@@ -10,9 +10,10 @@ description: Automate and validate Coolify deployments through the Coolify API u
 1. Read the repo deploy notes first, usually `deploy_coolify.md`, then inspect `docker-compose.yml`, Dockerfile, entrypoint, `.env.example`, and `git status`.
 2. Verify locally before touching Coolify: `docker compose --env-file .env.example config`, tests/builds relevant to the stack, and a container smoke test when feasible.
 3. Commit and push deploy changes before asking Coolify to build. Coolify deploys from the remote branch, not local uncommitted files.
-4. Authenticate with `COOLIFY_API_KEY` from the environment. Do not print token values or generated secrets.
-5. Use the Coolify API idempotently: find or create project, environment, application, env vars, then deploy by application UUID and poll deployment status.
-6. Validate the public domain by direct HTTP/HTTPS requests to `/` and expected API routes. Report exact status codes and Coolify UUIDs.
+4. When the target project, environment, domain, application, and auto-deploy branch already exist and are healthy, do not trigger a manual redeploy for every code change. Push the target branch and monitor the deployment created by the GitHub App/webhook instead. Trigger deploy manually only for initial provisioning, changed Coolify configuration/env vars, disabled or failed auto-deploy, or an explicit user request.
+5. Authenticate with `COOLIFY_API_KEY` from the environment. Do not print token values or generated secrets.
+6. Use the Coolify API idempotently: find or create project, environment, application, env vars, then deploy by application UUID and poll deployment status.
+7. Validate the public domain by direct HTTP/HTTPS requests to `/` and expected API routes. Report exact status codes and Coolify UUIDs.
 
 ## Defaults
 

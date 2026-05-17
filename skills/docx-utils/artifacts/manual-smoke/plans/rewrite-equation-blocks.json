@@ -1,0 +1,16 @@
+{
+  "edits": [
+    {
+      "id": "eq-1",
+      "paragraphPrefix": "Ancora equacao reescrita",
+      "replacementText": "Ancora equacao reescrita",
+      "items": [
+        {
+          "kind": "equation",
+          "latex": "x=1",
+          "styleId": "equacao"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "edits": [
+    {
+      "id": "edit-conclusao",
+      "paragraphPrefix": "Conclusao original",
+      "replacementText": "Conclusao editada",
+      "styleId": "CorpoTexto"
+    },
+    {
+      "id": "style-crossref-caption",
+      "paragraphPrefix": "Legenda Crossref",
+      "styleId": "Figura"
+    }
+  ]
+}

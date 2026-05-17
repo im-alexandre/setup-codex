@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using System.Xml.Xsl;
 using DocxOpenXmlTools.Cli;
 using DocxOpenXmlTools.PlanContracts;
+using DocxOpenXmlTools.TemplateProfiles;
 using DocxOpenXmlTools.Mutation;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Drawing.Wordprocessing;
@@ -73,6 +74,26 @@ if (command is "validate-plan")
     }
 
     return PlanContractCommands.ValidatePlan(args.Skip(1).ToArray());
+}
+
+if (command is "inspect-template")
+{
+    return TemplateProfileCommandStubs.InspectTemplate(args.Skip(1).ToArray());
+}
+
+if (command is "validate-template-profile")
+{
+    return TemplateProfileCommandStubs.ValidateTemplateProfile(args.Skip(1).ToArray());
+}
+
+if (command is "apply-template")
+{
+    return TemplateProfileCommandStubs.ApplyTemplate(args.Skip(1).ToArray());
+}
+
+if (command is "audit-template-application")
+{
+    return TemplateProfileCommandStubs.AuditTemplateApplication(args.Skip(1).ToArray());
 }
 
 if (args.Length < 2)
@@ -231,8 +252,11 @@ static int AcceptRevisions(string docxPath, IReadOnlyDictionary<string, string> 
     if (mainPart.FootnotesPart != null) AcceptInPart(mainPart.FootnotesPart);
     if (mainPart.EndnotesPart != null) AcceptInPart(mainPart.EndnotesPart);
 
+    var disableTrack = options.TryGetValue("disable-track", out var disableValue)
+        && string.Equals(disableValue, "true", StringComparison.OrdinalIgnoreCase);
+
     // Optionally disable TrackRevisions when --disable-track is passed
-    if (options.TryGetValue("disable-track", out var disable) && string.Equals(disable, "true", StringComparison.OrdinalIgnoreCase))
+    if (disableTrack)
     {
         var settings = mainPart.DocumentSettingsPart?.Settings;
         if (settings != null)
@@ -242,6 +266,8 @@ static int AcceptRevisions(string docxPath, IReadOnlyDictionary<string, string> 
             settings.Save();
         }
     }
+
+    SaveMainDocumentWithValidationRepair(doc, ensureTrackRevisions: disableTrack is not true);
 
     if (options.TryGetValue("report", out var reportPathValue) && !string.IsNullOrWhiteSpace(reportPathValue))
     {
@@ -382,7 +408,7 @@ Uso:
   docx-utils create-article <article_spec.json> <output.docx> [author] [--lock <lockfile>] [--template <template.docx>] [--sbpo] [--blind]
   docx-utils create-docx <output.docx> [--plan <json>]
   docx-utils validate-plan <comando> --plan <json>
-  docx-utils plan-contracts [comando] [--format markdown|json]
+  docx-utils plan-contracts | plan-contract [comando] [--format markdown|json]
   docx-utils help | --help | -h | /?   Mostra esta ajuda.
 
 Notas gerais:
@@ -396,7 +422,7 @@ Notas gerais:
   - `create-docx` cria um DOCX vazio quando chamado sem `--plan` e usa um plano JSON quando informado.
 
 Planos de blocos e tabelas:
-  - plan-contracts [comando] [--format markdown|json] expõe os contratos operacionais de planos sem ler a implementacao.
+  - plan-contracts | plan-contract [comando] [--format markdown|json] expõe os contratos operacionais de planos sem ler a implementacao.
   - validate-plan <comando> --plan <json> valida o contrato JSON de create-docx, insert-blocks, replace-blocks ou replace-table antes de mutar o DOCX.
   - insert-blocks, replace-blocks e replace-table seguem os contratos publicados em references/plan-contracts.md e references/plan-contracts.json.
   - replace-blocks remove o intervalo entre `afterPrefix` e `beforePrefix` e insere parágrafos/tabelas declarativamente no lugar.
@@ -411,6 +437,16 @@ Criação de documentos:
     Cria um DOCX do zero. Sem --plan, gera um arquivo vazio; com plano, renderiza title, paragraphs, subtitles, sections e references.
     Exemplo vazio: docx-utils create-docx novo.docx
     Exemplo com plano: docx-utils create-docx novo.docx --plan documento.json
+
+Profiles de template:
+  - inspect-template <docx> --out <json> [--report <md>]
+    Extrai candidatos tecnicos do template e grava JSON e relatorio Markdown.
+  - validate-template-profile <profile.json>
+    Valida o perfil canonico e o hash do template associado.
+  - apply-template --template <docx> --source <docx> --profile <json> --out <docx> [--report <md>]
+    Aplica um perfil canonico ao documento fonte usando o template alvo.
+  - audit-template-application <docx> --profile <json> [--report <md>]
+    Audita o DOCX aplicado contra o perfil canonico.
 
 Inspecao e auditoria:
   paragraphs <docx> [--start N] [--count N] [--contains TEXT] [--all true|false]
@@ -541,7 +577,7 @@ Estilos e formatacao:
     Valida o contrato JSON de `create-docx`, `insert-blocks`, `replace-blocks` ou `replace-table` sem mutar o DOCX.
     Exemplo: docx-utils validate-plan insert-blocks --plan blocos.json
 
-  plan-contracts [comando] [--format markdown|json]
+  plan-contracts | plan-contract [comando] [--format markdown|json]
     Retorna os contratos operacionais em Markdown ou JSON, com fonte em references/plan-contracts.json.
     Exemplo: docx-utils plan-contracts replace-table --format json
 
@@ -672,7 +708,7 @@ Reparos e ajustes academicos:
 
 Finalizacao:
   accept-revisions <docx> --lock <lockfile> [--disable-track true|false] [--report md]
-    Aceita insercoes/delecoes rastreadas e opcionalmente desativa TrackRevisions.
+    Aceita insercoes/delecoes rastreadas, repara a validacao antes de salvar e preserva --disable-track.
     Exemplo: docx-utils accept-revisions tese.docx --lock tese.lock --disable-track true --report aceite.md
 """);
 }
@@ -2309,10 +2345,13 @@ static int StyleRunningText(string docxPath, IReadOnlyDictionary<string, string>
     return validationErrors.Count == 0 ? 0 : 8;
 }
 
-static IReadOnlyList<string> RepairValidationBeforeSave(WordprocessingDocument doc)
+static IReadOnlyList<string> RepairValidationBeforeSave(WordprocessingDocument doc, bool ensureTrackRevisions = true)
 {
     var changes = new List<string>();
-    EnsureTrackRevisions(doc);
+    if (ensureTrackRevisions)
+    {
+        EnsureTrackRevisions(doc);
+    }
 
     var nextId = 1;
     foreach (var inserted in doc.MainDocumentPart!.Document.Descendants<InsertedRun>())
@@ -2385,12 +2424,34 @@ static IReadOnlyList<string> RepairValidationBeforeSave(WordprocessingDocument d
     }
     changes.Add($"w14_ligatures_removed={ligatureCount}");
 
+    var stylePaneFormatFilterCount = 0;
+    if (doc.MainDocumentPart?.DocumentSettingsPart?.Settings is { } settings)
+    {
+        foreach (var element in settings.Descendants()
+            .Where(e => string.Equals(e.LocalName, "stylePaneFormatFilter", StringComparison.Ordinal)
+                && string.Equals(e.NamespaceUri, "http://schemas.openxmlformats.org/wordprocessingml/2006/main", StringComparison.Ordinal))
+            .ToList())
+        {
+            element.Remove();
+            stylePaneFormatFilterCount++;
+        }
+
+        if (stylePaneFormatFilterCount > 0)
+        {
+            settings.Save();
+        }
+    }
+    changes.Add($"style_pane_format_filter_removed={stylePaneFormatFilterCount}");
+
     return changes;
 }
 
-static void SaveMainDocumentWithValidationRepair(WordprocessingDocument doc, List<string>? applied = null)
+static void SaveMainDocumentWithValidationRepair(
+    WordprocessingDocument doc,
+    List<string>? applied = null,
+    bool ensureTrackRevisions = true)
 {
-    _ = RepairValidationBeforeSave(doc);
+    _ = RepairValidationBeforeSave(doc, ensureTrackRevisions);
 
     var mainPart = doc.MainDocumentPart
         ?? throw new InvalidOperationException("DOCX sem MainDocumentPart.");

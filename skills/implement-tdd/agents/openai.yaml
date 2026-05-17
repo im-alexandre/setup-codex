@@ -1,0 +1,7 @@
+interface:
+  display_name: "Implement TDD"
+  short_description: "Orquestra implementação TDD por agentes"
+  default_prompt: "Use $implement-tdd para executar o plano TDD mais recente com agentes especializados."
+
+policy:
+  allow_implicit_invocation: false

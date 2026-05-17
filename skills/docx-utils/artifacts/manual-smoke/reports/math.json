@@ -1,0 +1,23 @@
+﻿[
+  {
+    "ParagraphIndex": 30,
+    "MathIndex": 0,
+    "ParagraphText": "Formula linear alvo:",
+    "MathText": "a\u002Bb=c",
+    "LooksLikeLinearLatex": false
+  },
+  {
+    "ParagraphIndex": 31,
+    "MathIndex": 0,
+    "ParagraphText": "Formula alias alvo:",
+    "MathText": "m\u002Bn=p",
+    "LooksLikeLinearLatex": false
+  },
+  {
+    "ParagraphIndex": 33,
+    "MathIndex": 0,
+    "ParagraphText": "(1)",
+    "MathText": "x=1",
+    "LooksLikeLinearLatex": false
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "replace-text": {
+    "required": ["replacements"],
+    "replacementRequired": ["slideIndex", "shapeIndex", "find", "replace"],
+    "modes": ["exact"]
+  },
+  "replace-image": {
+    "required": ["replacements"],
+    "replacementRequired": ["slideIndex", "shapeIndex", "imagePath"]
+  }
+}

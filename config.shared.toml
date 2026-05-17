@@ -1,5 +1,5 @@
 model = "gpt-5.5"
-model_reasoning_effort = "medium"
+model_reasoning_effort = "high"
 plan_mode_reasoning_effort = "xhigh"
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
@@ -28,82 +28,6 @@ statusMessage = "Forcing subagent defaults"
 [agents]
 max_threads = 10
 max_depth = 1
-
-[projects.'D:\a12031-guatapora']
-trust_level = "trusted"
-
-[projects.'D:\statsforecast_app']
-trust_level = "trusted"
-
-[projects.'D:\nextcloud-onlyoffice-coolify']
-trust_level = "trusted"
-
-[projects.'D:\codice']
-trust_level = "trusted"
-
-[projects.'d:\agentes_ia']
-trust_level = "trusted"
-
-[projects.'d:\agentes_dev']
-trust_level = "trusted"
-
-[projects.'d:\time_dev']
-trust_level = "trusted"
-
-[projects.'d:\zotero_mcp']
-trust_level = "trusted"
-
-[projects.'c:\users\imale\gesture-recognition']
-trust_level = "trusted"
-
-[projects.'d:\gesture-recognition']
-trust_level = "trusted"
-
-[projects.'d:\llm_local']
-trust_level = "trusted"
-
-[projects.'d:\openclaw']
-trust_level = "trusted"
-
-[projects.'d:\mendeley-mcp']
-trust_level = "trusted"
-
-[projects.'c:\users\imale\.codex']
-trust_level = "trusted"
-
-[projects.'c:\users\imale']
-trust_level = "trusted"
-
-[projects.'d:\vaqueiro_dissertacao']
-trust_level = "trusted"
-
-[projects.'d:\rag-benchmark']
-trust_level = "trusted"
-
-[projects.'d:\experimentos']
-trust_level = "trusted"
-
-[projects.'d:\experimentos\codex-clean']
-trust_level = "trusted"
-
-[projects.'d:\experimentos\rag-benchmark']
-trust_level = "trusted"
-
-[projects.'d:\dissertacao']
-trust_level = "trusted"
-
-[projects.'d:\financas']
-trust_level = "trusted"
-
-[projects."/home/imale"]
-trust_level = "trusted"
-
-[projects."/home/imale/.codex"]
-trust_level = "trusted"
-
-[projects.'d:\portifolio_quantico']
-trust_level = "trusted"
-
 
 [windows]
 sandbox = "elevated"

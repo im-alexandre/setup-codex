@@ -1,0 +1,9 @@
+{
+  "formulas": [
+    {
+      "text": "a+b=c",
+      "latex": "a+b=c",
+      "display": true
+    }
+  ]
+}

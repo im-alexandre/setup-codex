@@ -1,0 +1,195 @@
+﻿{
+  "DocxPath": "C:\\Users\\imale\\.codex\\skills\\docx-utils\\artifacts\\manual-smoke\\smoke-main.docx",
+  "GeneratedAtUtc": "2026-05-15T13:38:18.9908135Z",
+  "ParagraphCount": 33,
+  "Tables": [
+    {
+      "Ordinal": 1,
+      "BlockIndex": 6,
+      "RowCount": 2,
+      "ColumnCount": 2,
+      "StyleId": "tabelauerj",
+      "Width": "9000",
+      "HasBorders": true,
+      "PreviousParagraph": {
+        "Index": 5,
+        "BlockIndex": 5,
+        "Text": "Paragrafo via insert-blocks",
+        "StyleId": "CorpoTexto",
+        "HasDrawing": false,
+        "HasMath": false
+      },
+      "NextParagraph": {
+        "Index": 6,
+        "BlockIndex": 7,
+        "Text": "Antes dos blocos",
+        "StyleId": "",
+        "HasDrawing": false,
+        "HasMath": false
+      },
+      "Next2Paragraph": {
+        "Index": 7,
+        "BlockIndex": 8,
+        "Text": "Texto antes",
+        "StyleId": "",
+        "HasDrawing": false,
+        "HasMath": false
+      },
+      "HasTitleAbove": false,
+      "HasSourceBelow": false,
+      "SourceCandidate": "",
+      "FirstCellText": "Novo A1"
+    },
+    {
+      "Ordinal": 2,
+      "BlockIndex": 12,
+      "RowCount": 2,
+      "ColumnCount": 2,
+      "StyleId": "tabelauerj",
+      "Width": "9000",
+      "HasBorders": true,
+      "PreviousParagraph": {
+        "Index": 10,
+        "BlockIndex": 11,
+        "Text": "Texto novo do replace-blocks",
+        "StyleId": "CorpoTexto",
+        "HasDrawing": false,
+        "HasMath": false
+      },
+      "NextParagraph": {
+        "Index": 11,
+        "BlockIndex": 13,
+        "Text": "Fechamento do intervalo.",
+        "StyleId": "",
+        "HasDrawing": false,
+        "HasMath": false
+      },
+      "Next2Paragraph": {
+        "Index": 12,
+        "BlockIndex": 14,
+        "Text": "Ancora tracked antes",
+        "StyleId": "",
+        "HasDrawing": false,
+        "HasMath": false
+      },
+      "HasTitleAbove": false,
+      "HasSourceBelow": false,
+      "SourceCandidate": "",
+      "FirstCellText": "R1"
+    }
+  ],
+  "Figures": [
+    {
+      "Ordinal": 1,
+      "BlockIndex": 17,
+      "ParagraphIndex": 15,
+      "ParagraphText": "Figura smoke substituida",
+      "DrawingName": "fig-smoke",
+      "DrawingDescription": "Figura smoke substituida",
+      "PreviousParagraph": {
+        "Index": 14,
+        "BlockIndex": 16,
+        "Text": "Ancora tracked depois",
+        "StyleId": "",
+        "HasDrawing": false,
+        "HasMath": false
+      },
+      "NextParagraph": {
+        "Index": 16,
+        "BlockIndex": 18,
+        "Text": "Fonte: Smoke",
+        "StyleId": "legenda",
+        "HasDrawing": false,
+        "HasMath": false
+      },
+      "Next2Paragraph": {
+        "Index": 17,
+        "BlockIndex": 19,
+        "Text": "Depois da figura",
+        "StyleId": "",
+        "HasDrawing": false,
+        "HasMath": false
+      },
+      "HasTitleAbove": false,
+      "HasSourceBelow": true,
+      "SourceCandidate": "Fonte: Smoke"
+    }
+  ],
+  "Equations": [
+    {
+      "Ordinal": 1,
+      "BlockIndex": 24,
+      "ParagraphIndex": 22,
+      "Text": "Formula linear alvo:",
+      "MathText": "a\u002Bb=c",
+      "StyleId": "",
+      "HasTrailingNumber": false,
+      "PreviousParagraph": {
+        "Index": 21,
+        "BlockIndex": 23,
+        "Text": "Conforme Figura 1.",
+        "StyleId": "",
+        "HasDrawing": false,
+        "HasMath": false
+      },
+      "NextParagraph": {
+        "Index": 23,
+        "BlockIndex": 25,
+        "Text": "Formula alias alvo:",
+        "StyleId": "",
+        "HasDrawing": false,
+        "HasMath": true
+      }
+    },
+    {
+      "Ordinal": 2,
+      "BlockIndex": 25,
+      "ParagraphIndex": 23,
+      "Text": "Formula alias alvo:",
+      "MathText": "m\u002Bn=p",
+      "StyleId": "",
+      "HasTrailingNumber": false,
+      "PreviousParagraph": {
+        "Index": 22,
+        "BlockIndex": 24,
+        "Text": "Formula linear alvo:",
+        "StyleId": "",
+        "HasDrawing": false,
+        "HasMath": true
+      },
+      "NextParagraph": {
+        "Index": 24,
+        "BlockIndex": 26,
+        "Text": "Ancora equacao reescrita",
+        "StyleId": "",
+        "HasDrawing": false,
+        "HasMath": false
+      }
+    },
+    {
+      "Ordinal": 3,
+      "BlockIndex": 27,
+      "ParagraphIndex": 25,
+      "Text": "(1)",
+      "MathText": "x=1",
+      "StyleId": "equacao",
+      "HasTrailingNumber": true,
+      "PreviousParagraph": {
+        "Index": 24,
+        "BlockIndex": 26,
+        "Text": "Ancora equacao reescrita",
+        "StyleId": "",
+        "HasDrawing": false,
+        "HasMath": false
+      },
+      "NextParagraph": {
+        "Index": 26,
+        "BlockIndex": 28,
+        "Text": "Conclusao editada",
+        "StyleId": "CorpoTexto",
+        "HasDrawing": false,
+        "HasMath": false
+      }
+    }
+  ]
+}

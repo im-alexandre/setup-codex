@@ -1,0 +1,175 @@
+﻿{
+  "DocxPath": "C:\\Users\\imale\\.codex\\skills\\docx-utils\\artifacts\\manual-smoke\\smoke-main.docx",
+  "GeneratedAtUtc": "2026-05-15T13:38:19.4309908Z",
+  "TableCount": 2,
+  "AcademicTableCount": 0,
+  "FigureCount": 1,
+  "AcademicFigureCount": 1,
+  "Tables": [
+    {
+      "Ordinal": 1,
+      "BlockIndex": 6,
+      "IsAcademicTable": false,
+      "RowCount": 2,
+      "ColumnCount": 2,
+      "CellCount": 4,
+      "TableStyleId": "tabelauerj",
+      "WidthType": "TableWidthUnitValues { }",
+      "Width": "9000",
+      "Justification": "TableRowAlignmentValues { }",
+      "LayoutType": "TableLayoutValues { }",
+      "Borders": {
+        "top": "BorderValues { }; sz=4; color=000000",
+        "bottom": "BorderValues { }; sz=4; color=000000",
+        "left": "BorderValues { }; sz=; color=",
+        "right": "BorderValues { }; sz=; color=",
+        "insideH": "BorderValues { }; sz=2; color=000000",
+        "insideV": "BorderValues { }; sz=; color="
+      },
+      "HasVerticalBorders": true,
+      "GridColumnWidths": [
+        "4500",
+        "4500"
+      ],
+      "HasMergedCells": false,
+      "CellParagraphStyles": {
+        "dados": 4
+      },
+      "DirectFontSizes": {},
+      "JustificationCounts": {
+        "(herdado/vazio)": 4
+      },
+      "CellVerticalAlignments": {
+        "(herdado/vazio)": 4
+      },
+      "PreviousParagraph": {
+        "Index": 5,
+        "BlockIndex": 5,
+        "Text": "Paragrafo via insert-blocks",
+        "StyleId": "CorpoTexto",
+        "HasDrawing": false,
+        "HasMath": false
+      },
+      "NextParagraph": {
+        "Index": 6,
+        "BlockIndex": 7,
+        "Text": "Antes dos blocos",
+        "StyleId": "",
+        "HasDrawing": false,
+        "HasMath": false
+      },
+      "Next2Paragraph": {
+        "Index": 7,
+        "BlockIndex": 8,
+        "Text": "Texto antes",
+        "StyleId": "",
+        "HasDrawing": false,
+        "HasMath": false
+      },
+      "SourceCandidate": "",
+      "FirstCellText": "Novo A1",
+      "Issues": []
+    },
+    {
+      "Ordinal": 2,
+      "BlockIndex": 12,
+      "IsAcademicTable": false,
+      "RowCount": 2,
+      "ColumnCount": 2,
+      "CellCount": 4,
+      "TableStyleId": "tabelauerj",
+      "WidthType": "TableWidthUnitValues { }",
+      "Width": "9000",
+      "Justification": "TableRowAlignmentValues { }",
+      "LayoutType": "TableLayoutValues { }",
+      "Borders": {
+        "top": "BorderValues { }; sz=4; color=000000",
+        "bottom": "BorderValues { }; sz=4; color=000000",
+        "left": "BorderValues { }; sz=; color=",
+        "right": "BorderValues { }; sz=; color=",
+        "insideH": "BorderValues { }; sz=2; color=000000",
+        "insideV": "BorderValues { }; sz=; color="
+      },
+      "HasVerticalBorders": true,
+      "GridColumnWidths": [
+        "4500",
+        "4500"
+      ],
+      "HasMergedCells": false,
+      "CellParagraphStyles": {
+        "dados": 4
+      },
+      "DirectFontSizes": {},
+      "JustificationCounts": {
+        "(herdado/vazio)": 4
+      },
+      "CellVerticalAlignments": {
+        "(herdado/vazio)": 4
+      },
+      "PreviousParagraph": {
+        "Index": 10,
+        "BlockIndex": 11,
+        "Text": "Texto novo do replace-blocks",
+        "StyleId": "CorpoTexto",
+        "HasDrawing": false,
+        "HasMath": false
+      },
+      "NextParagraph": {
+        "Index": 11,
+        "BlockIndex": 13,
+        "Text": "Fechamento do intervalo.",
+        "StyleId": "",
+        "HasDrawing": false,
+        "HasMath": false
+      },
+      "Next2Paragraph": {
+        "Index": 12,
+        "BlockIndex": 14,
+        "Text": "Ancora tracked antes",
+        "StyleId": "",
+        "HasDrawing": false,
+        "HasMath": false
+      },
+      "SourceCandidate": "",
+      "FirstCellText": "R1",
+      "Issues": []
+    }
+  ],
+  "Figures": [
+    {
+      "Ordinal": 1,
+      "BlockIndex": 17,
+      "ParagraphIndex": 15,
+      "IsAcademicFigure": true,
+      "ParagraphText": "Figura smoke substituida",
+      "ParagraphStyleId": "Figura",
+      "DrawingName": "fig-smoke",
+      "DrawingDescription": "Figura smoke substituida",
+      "DrawingKind": "inline",
+      "Wrap": "inline",
+      "WidthCm": 14,
+      "HeightCm": 14,
+      "HasOutline": false,
+      "SimplePosition": false,
+      "RelativeHeight": 0,
+      "SourceCandidate": "Fonte: Smoke",
+      "NextParagraph": {
+        "Index": 16,
+        "BlockIndex": 18,
+        "Text": "Fonte: Smoke",
+        "StyleId": "legenda",
+        "HasDrawing": false,
+        "HasMath": false
+      },
+      "Next2Paragraph": {
+        "Index": 17,
+        "BlockIndex": 19,
+        "Text": "Depois da figura",
+        "StyleId": "",
+        "HasDrawing": false,
+        "HasMath": false
+      },
+      "Issues": []
+    }
+  ]
+}

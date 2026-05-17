@@ -1,0 +1,90 @@
+﻿{
+  "DocxPath": "C:\\Users\\imale\\.codex\\skills\\docx-utils\\artifacts\\manual-smoke\\smoke-main.docx",
+  "GeneratedAtUtc": "2026-05-15T13:38:19.8555549Z",
+  "MathParagraphCount": 3,
+  "SeqFieldCount": 1,
+  "CaptionSeqFieldCount": 0,
+  "DissertationEquationCount": 1,
+  "DistinctDissertationEquationNumberCount": 1,
+  "MathParagraphs": [
+    {
+      "Ordinal": 1,
+      "BlockIndex": 24,
+      "ParagraphIndex": 22,
+      "StyleId": "",
+      "ParagraphText": "Formula linear alvo:",
+      "SeqFields": [],
+      "IsDissertationEquation": false,
+      "DissertationEquationNumber": null
+    },
+    {
+      "Ordinal": 2,
+      "BlockIndex": 25,
+      "ParagraphIndex": 23,
+      "StyleId": "",
+      "ParagraphText": "Formula alias alvo:",
+      "SeqFields": [],
+      "IsDissertationEquation": false,
+      "DissertationEquationNumber": null
+    },
+    {
+      "Ordinal": 3,
+      "BlockIndex": 27,
+      "ParagraphIndex": 25,
+      "StyleId": "equacao",
+      "ParagraphText": "(1)",
+      "SeqFields": [
+        {
+          "Instruction": "SEQ Eq \\* ARABIC",
+          "SequenceName": "Eq",
+          "ResultText": "1",
+          "ResultNumber": 1
+        }
+      ],
+      "IsDissertationEquation": true,
+      "DissertationEquationNumber": 1
+    }
+  ],
+  "SeqFields": [
+    {
+      "Ordinal": 1,
+      "BlockIndex": 27,
+      "ParagraphIndex": 25,
+      "StyleId": "equacao",
+      "ParagraphText": "(1)",
+      "Instruction": "SEQ Eq \\* ARABIC",
+      "SequenceName": "Eq",
+      "ResultText": "1",
+      "ResultNumber": 1,
+      "IsCaptionSeq": false
+    }
+  ],
+  "DissertationEquations": [
+    {
+      "Ordinal": 1,
+      "BlockIndex": 27,
+      "ParagraphIndex": 25,
+      "StyleId": "equacao",
+      "Number": 1,
+      "MathText": "x=1",
+      "ParagraphText": "(1)",
+      "SeqInstruction": "SEQ Eq \\* ARABIC",
+      "PreviousParagraph": {
+        "Index": 24,
+        "BlockIndex": 26,
+        "Text": "Ancora equacao reescrita",
+        "StyleId": "",
+        "HasDrawing": false,
+        "HasMath": false
+      },
+      "NextParagraph": {
+        "Index": 26,
+        "BlockIndex": 28,
+        "Text": "Conclusao editada",
+        "StyleId": "CorpoTexto",
+        "HasDrawing": false,
+        "HasMath": false
+      }
+    }
+  ]
+}

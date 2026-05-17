@@ -1,0 +1,10 @@
+{
+  "comments": [
+    {
+      "id": "comment-1",
+      "anchorPrefix": "Comentario anchor original",
+      "anchorContains": "anchor",
+      "commentText": "Comentario smoke"
+    }
+  ]
+}

@@ -60,6 +60,9 @@ class Coolify:
             raise SystemExit(f"Coolify API {method} {path} failed: {response.status_code} {detail}") from exc
         if not response.content:
             return None
+        content_type = response.headers.get("content-type", "")
+        if "application/json" not in content_type:
+            return response.text
         return response.json()
 
     def get(self, path: str) -> Any:
@@ -164,9 +167,11 @@ def main() -> int:
     apps = client.get("/api/v1/applications")
     app = find_first(
         apps,
-        lambda item: item.get("git_repository") == args.repository
-        or domain_host in str(item.get("docker_compose_domains", ""))
-        or args.project_name.lower() in str(item.get("name", "")).lower(),
+        lambda item: domain_host in str(item.get("docker_compose_domains", ""))
+        or (
+            item.get("git_repository") == args.repository
+            and item.get("git_branch") == args.branch
+        ),
     )
     if app is None:
         app = client.post(
@@ -192,6 +197,20 @@ def main() -> int:
         print(f"existing_app_uuid={app['uuid']}")
     app_uuid = app["uuid"]
 
+    existing_runtime_env: dict[str, str] = {}
+    try:
+        existing_envs = client.get(f"/api/v1/applications/{app_uuid}/envs")
+        if isinstance(existing_envs, list):
+            for item in existing_envs:
+                if item.get("is_preview"):
+                    continue
+                key = item.get("key")
+                value = item.get("real_value", item.get("value"))
+                if key and value is not None:
+                    existing_runtime_env[str(key)] = str(value)
+    except SystemExit:
+        existing_runtime_env = {}
+
     runtime_env = parse_env(args.env)
     if args.django_default_envs:
         runtime_env = {
@@ -199,9 +218,9 @@ def main() -> int:
             "SQL_HOST": "db_electre",
             "SQL_PORT": "5432",
             "POSTGRES_USER": "electremor",
-            "POSTGRES_PASSWORD": token_secret(36),
+            "POSTGRES_PASSWORD": existing_runtime_env.get("POSTGRES_PASSWORD", token_secret(36)),
             "POSTGRES_DB": "electremor",
-            "SECRET_KEY": token_secret(48),
+            "SECRET_KEY": existing_runtime_env.get("SECRET_KEY", token_secret(48)),
             "DEBUG": "1",
             "DJANGO_ALLOWED_HOSTS": f"localhost,127.0.0.1,coolify.drg.ink,{domain_host}",
             **runtime_env,

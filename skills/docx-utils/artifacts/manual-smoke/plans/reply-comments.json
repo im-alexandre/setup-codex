@@ -1,0 +1,11 @@
+{
+  "replies": [
+    {
+      "id": "reply-1",
+      "parentCommentId": "1",
+      "replyText": "Reply smoke",
+      "anchorPrefix": "Comentario anchor novo",
+      "anchorContains": "anchor"
+    }
+  ]
+}

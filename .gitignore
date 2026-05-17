@@ -13,6 +13,7 @@ sandbox.log
 .codex-global-state.json*
 ..codex-global-state.json.tmp-*
 .personality_migration
+config.toml
 
 .sandbox/
 .sandbox-bin/
@@ -101,3 +102,7 @@ exports/
 presets/skill-services.json
 presets/skills-services.json
 /shell_snapshots
+.codex/agent-events
+agent-events/results
+agent-events
+computer-use-turn-ended

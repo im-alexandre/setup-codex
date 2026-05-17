@@ -1,0 +1,25 @@
+{
+  "blocks": [
+    {
+      "id": "replace-blocks-1",
+      "afterPrefix": "Abertura do intervalo.",
+      "beforePrefix": "Fechamento do intervalo.",
+      "items": [
+        {
+          "kind": "paragraph",
+          "text": "Texto novo do replace-blocks",
+          "styleId": "CorpoTexto"
+        },
+        {
+          "kind": "table",
+          "tableStyleId": "tabelauerj",
+          "cellStyleId": "dados",
+          "rows": [
+            ["R1", "R2"],
+            ["R3", "R4"]
+          ]
+        }
+      ]
+    }
+  ]
+}

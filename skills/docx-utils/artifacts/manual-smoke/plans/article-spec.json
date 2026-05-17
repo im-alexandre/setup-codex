@@ -1,0 +1,18 @@
+{
+  "title": "Artigo Smoke",
+  "subtitle": "Validacao operacional",
+  "authorLine": "Smoke Runner",
+  "resumo": "Resumo minimo para smoke.",
+  "abstract": "Minimal abstract for smoke.",
+  "palavrasChave": ["smoke"],
+  "keywords": ["smoke"],
+  "sections": [
+    {
+      "heading": "Introducao",
+      "level": 1,
+      "paragraphs": ["Paragrafo de artigo para smoke."],
+      "items": []
+    }
+  ],
+  "references": ["Referencia Smoke"]
+}

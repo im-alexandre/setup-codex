@@ -1,0 +1,9 @@
+{
+  "formulas": [
+    {
+      "text": "m+n=p",
+      "latex": "m+n=p",
+      "display": true
+    }
+  ]
+}

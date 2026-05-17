@@ -1,0 +1,13 @@
+{
+  "figures": [
+    {
+      "id": "fig-smoke",
+      "afterPrefix": "Ancora da figura",
+      "beforePrefix": "Depois da figura",
+      "imagePath": "C:\\Users\\imale\\.codex\\skills\\docx-utils\\artifacts\\manual-smoke\\data\\figure.png",
+      "captionText": "Figura smoke inserida",
+      "sourceText": "Fonte: Smoke",
+      "widthCm": 3.0
+    }
+  ]
+}
